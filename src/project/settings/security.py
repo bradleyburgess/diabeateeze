@@ -7,7 +7,7 @@ from .environment import env, ENVIRONMENT
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = env(
     "SECRET_KEY",
-    default="django-insecure-s70y=-2!)zx$uknn%yaufojq9h^8kk4b39x+pz!uvy6p8=tz(2"
+    default="django-insecure-s70y=-2!)zx$uknn%yaufojq9h^8kk4b39x+pz!uvy6p8=tz(2",
 )
 
 # Raise error if using default secret key in production
@@ -28,19 +28,20 @@ PASSWORD_HASHERS = [
     "django.contrib.auth.hashers.ScryptPasswordHasher",
 ]
 
-ALLOWED_HOSTS = env.list("ALLOWED_HOSTS", default=["localhost", "127.0.0.1"] if ENVIRONMENT != "production" else [])
+ALLOWED_HOSTS = env.list(
+    "ALLOWED_HOSTS",
+    default=["localhost", "127.0.0.1"] if ENVIRONMENT != "production" else [],
+)
 
-if ENVIRONMENT == 'production':
+if ENVIRONMENT == "production":
     # ...existing code...
-    
+
     # Trust proxy headers from Caddy
-    SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
-    
+    SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+
     # CSRF settings for reverse proxy
-    CSRF_TRUSTED_ORIGINS = [
-        f'https://{host}' for host in ALLOWED_HOSTS if host != '*'
-    ]
-    
+    CSRF_TRUSTED_ORIGINS = [f"https://{host}" for host in ALLOWED_HOSTS if host != "*"]
+
     # Use X-Forwarded-Host header
     USE_X_FORWARDED_HOST = True
     USE_X_FORWARDED_PORT = True

@@ -10,7 +10,9 @@ if ENVIRONMENT == "production":
     # PostgreSQL for production - all settings required
     try:
         DATABASES = {
-            "default": env.db("DATABASE_URL")  # Expects postgresql://user:password@host:port/dbname
+            "default": env.db(
+                "DATABASE_URL"
+            )  # Expects postgresql://user:password@host:port/dbname
         }
     except environ.ImproperlyConfigured:
         raise ValueError(
