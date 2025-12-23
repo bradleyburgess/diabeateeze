@@ -29,3 +29,18 @@ PASSWORD_HASHERS = [
 ]
 
 ALLOWED_HOSTS = env.list("ALLOWED_HOSTS", default=["localhost", "127.0.0.1"] if ENVIRONMENT != "production" else [])
+
+if ENVIRONMENT == 'production':
+    # ...existing code...
+    
+    # Trust proxy headers from Caddy
+    SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+    
+    # CSRF settings for reverse proxy
+    CSRF_TRUSTED_ORIGINS = [
+        f'https://{host}' for host in ALLOWED_HOSTS if host != '*'
+    ]
+    
+    # Use X-Forwarded-Host header
+    USE_X_FORWARDED_HOST = True
+    USE_X_FORWARDED_PORT = True
