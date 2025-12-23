@@ -6,3 +6,7 @@ migrate:
 
 test:
 	pytest
+
+check:
+	black src/
+	python manage.py check

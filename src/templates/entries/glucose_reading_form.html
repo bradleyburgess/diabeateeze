@@ -1,0 +1,130 @@
+{% extends "app_layout.html" %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-lg-8 mx-auto">
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="mb-0">{{ title }}</h2>
+                </div>
+                <div class="card-body">
+                    {% if reading %}<div class="alert alert-info mb-3" role="alert">
+                        <small>
+                            <strong>Created:</strong> {{ reading.created_at|date:"N j, Y, g:i A" }}<br>
+                            <strong>Last Modified:</strong> {{ reading.updated_at|date:"N j, Y, g:i A" }}
+                        </small>
+                    </div>
+                    {% endif %}
+                    
+                    <form method="post" novalidate>
+                        {% csrf_token %}
+                        
+                        {% if form.non_field_errors %}
+                        <div class="alert alert-danger" role="alert">
+                            {{ form.non_field_errors }}
+                        </div>
+                        {% endif %}
+
+                        <div class="mb-3">
+                            <label for="{{ form.occurred_at.id_for_label }}" class="form-label">
+                                {{ form.occurred_at.label }}
+                                {% if form.occurred_at.field.required %}<span class="text-danger">*</span>{% endif %}
+                            </label>
+                            {{ form.occurred_at }}
+                            {% if form.occurred_at.errors %}
+                            <div class="text-danger small mt-1">
+                                {{ form.occurred_at.errors }}
+                            </div>
+                            {% endif %}
+                            {% if form.occurred_at.help_text %}
+                            <div class="form-text">{{ form.occurred_at.help_text }}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="{{ form.value.id_for_label }}" class="form-label">
+                                {{ form.value.label }}
+                                {% if form.value.field.required %}<span class="text-danger">*</span>{% endif %}
+                            </label>
+                            {{ form.value }}
+                            {% if form.value.errors %}
+                            <div class="text-danger small mt-1">
+                                {{ form.value.errors }}
+                            </div>
+                            {% endif %}
+                            {% if form.value.help_text %}
+                            <div class="form-text">{{ form.value.help_text }}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="{{ form.unit.id_for_label }}" class="form-label">
+                                {{ form.unit.label }}
+                                {% if form.unit.field.required %}<span class="text-danger">*</span>{% endif %}
+                            </label>
+                            {{ form.unit }}
+                            {% if form.unit.errors %}
+                            <div class="text-danger small mt-1">
+                                {{ form.unit.errors }}
+                            </div>
+                            {% endif %}
+                            {% if form.unit.help_text %}
+                            <div class="form-text">{{ form.unit.help_text }}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="{{ form.notes.id_for_label }}" class="form-label">
+                                {{ form.notes.label }}
+                                {% if form.notes.field.required %}<span class="text-danger">*</span>{% endif %}
+                            </label>
+                            {{ form.notes }}
+                            {% if form.notes.errors %}
+                            <div class="text-danger small mt-1">
+                                {{ form.notes.errors }}
+                            </div>
+                            {% endif %}
+                            {% if form.notes.help_text %}
+                            <div class="form-text">{{ form.notes.help_text }}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-save"></i> {% if reading %}Update{% else %}Save{% endif %} Reading
+                            </button>
+                            <a href="{% url 'entries:glucose_readings_list' %}" class="btn btn-secondary">
+                                <i class="bi bi-x-circle"></i> Cancel
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Set current local datetime as default for new entries
+    document.addEventListener('DOMContentLoaded', function() {
+        {% if not reading %}
+        const occurredAtInput = document.getElementById('{{ form.occurred_at.id_for_label }}');
+        if (occurredAtInput && !occurredAtInput.value) {
+            const now = new Date();
+            // Format: YYYY-MM-DDTHH:MM (local time)
+            const year = now.getFullYear();
+            const month = String(now.getMonth() + 1).padStart(2, '0');
+            const day = String(now.getDate()).padStart(2, '0');
+            const hours = String(now.getHours()).padStart(2, '0');
+            const minutes = String(now.getMinutes()).padStart(2, '0');
+            occurredAtInput.value = `${year}-${month}-${day}T${hours}:${minutes}`;
+        }
+        {% endif %}
+    });
+</script>
+{% endblock %}

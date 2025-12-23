@@ -1,0 +1,70 @@
+{% extends "app_layout.html" %}
+{% load static %}
+
+{% block title %}Insulin Schedules - Diabeateeze{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1><i class="bi bi-calendar-check me-2"></i>Insulin Schedules</h1>
+                <a href="{% url 'entries:insulin_schedule_create' %}" class="btn btn-primary">
+                    <i class="bi bi-plus-circle"></i> Add Schedule
+                </a>
+            </div>
+
+            {% if schedules %}
+                <div class="card">
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Time</th>
+                                        <th>Label</th>
+                                        <th>Insulin Type</th>
+                                        <th>Units</th>
+                                        <th>Notes</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for schedule in schedules %}
+                                        <tr>
+                                            <td><strong>{{ schedule.time|time:"H:i" }}</strong></td>
+                                            <td>{{ schedule.label }}</td>
+                                            <td>
+                                                <span class="badge bg-info">{{ schedule.insulin_type.name }}</span>
+                                                <span class="badge bg-secondary">{{ schedule.insulin_type.get_type_display }}</span>
+                                            </td>
+                                            <td>{{ schedule.units }} units</td>
+                                            <td>
+                                                {% if schedule.notes %}
+                                                    <small class="text-muted">{{ schedule.notes|truncatewords:10 }}</small>
+                                                {% else %}
+                                                    <em class="text-muted">-</em>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                <a href="{% url 'entries:insulin_schedule_edit' schedule.pk %}" class="btn btn-sm btn-outline-primary">
+                                                    <i class="bi bi-pencil"></i> Edit
+                                                </a>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            {% else %}
+                <div class="alert alert-info">
+                    <i class="bi bi-info-circle me-2"></i>
+                    No insulin schedules found. <a href="{% url 'entries:insulin_schedule_create' %}">Add your first schedule</a>.
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

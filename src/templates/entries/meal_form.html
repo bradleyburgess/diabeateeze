@@ -1,0 +1,146 @@
+{% extends "app_layout.html" %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-lg-8 mx-auto">
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="mb-0">{{ title }}</h2>
+                </div>
+                <div class="card-body">
+                    {% if meal %}
+                    <div class="alert alert-info mb-3" role="alert">
+                        <small>
+                            <strong>Created:</strong> {{ meal.created_at|date:"N j, Y, g:i A" }}<br>
+                            <strong>Last Modified:</strong> {{ meal.updated_at|date:"N j, Y, g:i A" }}
+                        </small>
+                    </div>
+                    {% endif %}
+                    <form method="post" novalidate>
+                        {% csrf_token %}
+                        
+                        {% if form.non_field_errors %}
+                        <div class="alert alert-danger" role="alert">
+                            {{ form.non_field_errors }}
+                        </div>
+                        {% endif %}
+
+                        <div class="mb-3">
+                            <label for="{{ form.occurred_at.id_for_label }}" class="form-label">
+                                {{ form.occurred_at.label }}
+                                {% if form.occurred_at.field.required %}<span class="text-danger">*</span>{% endif %}
+                            </label>
+                            {{ form.occurred_at }}
+                            {% if form.occurred_at.errors %}
+                            <div class="text-danger small mt-1">
+                                {{ form.occurred_at.errors }}
+                            </div>
+                            {% endif %}
+                            {% if form.occurred_at.help_text %}
+                            <div class="form-text">{{ form.occurred_at.help_text }}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="{{ form.meal_type.id_for_label }}" class="form-label">
+                                {{ form.meal_type.label }}
+                                {% if form.meal_type.field.required %}<span class="text-danger">*</span>{% endif %}
+                            </label>
+                            {{ form.meal_type }}
+                            {% if form.meal_type.errors %}
+                            <div class="text-danger small mt-1">
+                                {{ form.meal_type.errors }}
+                            </div>
+                            {% endif %}
+                            {% if form.meal_type.help_text %}
+                            <div class="form-text">{{ form.meal_type.help_text }}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="{{ form.description.id_for_label }}" class="form-label">
+                                {{ form.description.label }}
+                                {% if form.description.field.required %}<span class="text-danger">*</span>{% endif %}
+                            </label>
+                            {{ form.description }}
+                            {% if form.description.errors %}
+                            <div class="text-danger small mt-1">
+                                {{ form.description.errors }}
+                            </div>
+                            {% endif %}
+                            {% if form.description.help_text %}
+                            <div class="form-text">{{ form.description.help_text }}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="{{ form.total_carbs.id_for_label }}" class="form-label">
+                                {{ form.total_carbs.label }}
+                                {% if form.total_carbs.field.required %}<span class="text-danger">*</span>{% endif %}
+                            </label>
+                            {{ form.total_carbs }}
+                            {% if form.total_carbs.errors %}
+                            <div class="text-danger small mt-1">
+                                {{ form.total_carbs.errors }}
+                            </div>
+                            {% endif %}
+                            {% if form.total_carbs.help_text %}
+                            <div class="form-text">{{ form.total_carbs.help_text }}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="{{ form.notes.id_for_label }}" class="form-label">
+                                {{ form.notes.label }}
+                                {% if form.notes.field.required %}<span class="text-danger">*</span>{% endif %}
+                            </label>
+                            {{ form.notes }}
+                            {% if form.notes.errors %}
+                            <div class="text-danger small mt-1">
+                                {{ form.notes.errors }}
+                            </div>
+                            {% endif %}
+                            {% if form.notes.help_text %}
+                            <div class="form-text">{{ form.notes.help_text }}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-save"></i> {% if meal %}Update{% else %}Save{% endif %} Meal
+                            </button>
+                            <a href="{% url 'entries:meals_list' %}" class="btn btn-secondary">
+                                <i class="bi bi-x-circle"></i> Cancel
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Set current local datetime as default for new entries
+    document.addEventListener('DOMContentLoaded', function() {
+        {% if not meal %}
+        const occurredAtInput = document.getElementById('{{ form.occurred_at.id_for_label }}');
+        if (occurredAtInput && !occurredAtInput.value) {
+            const now = new Date();
+            // Format: YYYY-MM-DDTHH:MM (local time)
+            const year = now.getFullYear();
+            const month = String(now.getMonth() + 1).padStart(2, '0');
+            const day = String(now.getDate()).padStart(2, '0');
+            const hours = String(now.getHours()).padStart(2, '0');
+            const minutes = String(now.getMinutes()).padStart(2, '0');
+            occurredAtInput.value = `${year}-${month}-${day}T${hours}:${minutes}`;
+        }
+        {% endif %}
+    });
+</script>
+{% endblock %}

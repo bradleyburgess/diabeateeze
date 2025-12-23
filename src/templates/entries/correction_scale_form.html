@@ -1,0 +1,78 @@
+{% extends "app_layout.html" %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-lg-8 mx-auto">
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="mb-0">{{ title }}</h2>
+                </div>
+                <div class="card-body">
+                    {% if scale %}
+                    <div class="alert alert-info mb-3" role="alert">
+                        <small>
+                            <strong>Created:</strong> {{ scale.created_at|date:"N j, Y, g:i A" }}<br>
+                            <strong>Last Modified:</strong> {{ scale.updated_at|date:"N j, Y, g:i A" }}
+                        </small>
+                    </div>
+                    {% endif %}
+                    
+                    <form method="post" novalidate>
+                        {% csrf_token %}
+                        
+                        {% if form.non_field_errors %}
+                        <div class="alert alert-danger" role="alert">
+                            {{ form.non_field_errors }}
+                        </div>
+                        {% endif %}
+
+                        <div class="mb-3">
+                            <label for="{{ form.greater_than.id_for_label }}" class="form-label">
+                                {{ form.greater_than.label }}
+                                {% if form.greater_than.field.required %}<span class="text-danger">*</span>{% endif %}
+                            </label>
+                            {{ form.greater_than }}
+                            {% if form.greater_than.errors %}
+                            <div class="text-danger small mt-1">
+                                {{ form.greater_than.errors }}
+                            </div>
+                            {% endif %}
+                            {% if form.greater_than.help_text %}
+                            <div class="form-text">{{ form.greater_than.help_text }}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="{{ form.units_to_add.id_for_label }}" class="form-label">
+                                {{ form.units_to_add.label }}
+                                {% if form.units_to_add.field.required %}<span class="text-danger">*</span>{% endif %}
+                            </label>
+                            {{ form.units_to_add }}
+                            {% if form.units_to_add.errors %}
+                            <div class="text-danger small mt-1">
+                                {{ form.units_to_add.errors }}
+                            </div>
+                            {% endif %}
+                            {% if form.units_to_add.help_text %}
+                            <div class="form-text">{{ form.units_to_add.help_text }}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-save"></i> {% if scale %}Update{% else %}Save{% endif %} Entry
+                            </button>
+                            <a href="{% url 'entries:correction_scales_list' %}" class="btn btn-secondary">
+                                <i class="bi bi-x-circle"></i> Cancel
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

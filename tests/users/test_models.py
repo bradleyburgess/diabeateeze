@@ -1,6 +1,4 @@
-"""
-Tests for the custom User model.
-"""
+"""Tests for users models."""
 import pytest
 from django.contrib.auth import get_user_model
 
@@ -48,27 +46,45 @@ class TestUserModel:
         """Test get_full_name method."""
         assert user.get_full_name() == f'{user.first_name} {user.last_name}'
 
-    def test_get_full_name_no_names(self, db):
-        """Test get_full_name returns formatted name."""
-        user = User.objects.create_user(  # type: ignore[call-arg]
-            email='test@example.com',
-            password='pass',
-            first_name='Jane',
-            last_name='Smith',
-        )
-        assert user.get_full_name() == 'Jane Smith'
-
     def test_get_short_name(self, user):
         """Test get_short_name method."""
         assert user.get_short_name() == user.first_name
 
-    def test_name_stripping(self, db):
-        """Test that names are stripped of whitespace."""
+    def test_user_email_normalization(self):
+        """Test that email is normalized."""
+        user = User.objects.create_user(  # type: ignore[call-arg]
+            email='Test@EXAMPLE.com',
+            password='testpass123',
+            first_name='Test',
+            last_name='User',
+        )
+        assert user.email == 'Test@example.com'
+
+    def test_user_name_whitespace_stripping(self):
+        """Test that first_name and last_name whitespace is stripped."""
         user = User.objects.create_user(  # type: ignore[call-arg]
             email='test@example.com',
-            password='testpass',
-            first_name='  John  ',
-            last_name='  Doe  ',
+            password='testpass123',
+            first_name='  Test  ',
+            last_name='  User  ',
         )
-        assert user.first_name == 'John'
-        assert user.last_name == 'Doe'
+        assert user.first_name == 'Test'
+        assert user.last_name == 'User'
+
+    def test_superuser_must_have_is_staff(self):
+        """Test that creating a superuser with is_staff=False raises ValueError."""
+        with pytest.raises(ValueError, match='Superuser must have is_staff=True'):
+            User.objects.create_superuser(  # type: ignore[call-arg]
+                email='admin@example.com',
+                password='adminpass123',
+                is_staff=False,
+            )
+
+    def test_superuser_must_have_is_superuser(self):
+        """Test that creating a superuser with is_superuser=False raises ValueError."""
+        with pytest.raises(ValueError, match='Superuser must have is_superuser=True'):
+            User.objects.create_superuser(  # type: ignore[call-arg]
+                email='admin@example.com',
+                password='adminpass123',
+                is_superuser=False,
+            )

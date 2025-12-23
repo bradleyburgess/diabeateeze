@@ -1,0 +1,8 @@
+# Add to .gitignore if not already present
+.env
+db.sqlite3
+staticfiles/
+mediafiles/
+*.pyc
+__pycache__/
+*.log

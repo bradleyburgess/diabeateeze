@@ -1,0 +1,152 @@
+{% extends "app_layout.html" %}
+
+{% block title %}Insulin Doses{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>Insulin Doses</h1>
+        <div class="d-flex align-items-center gap-2">
+            <a href="{% url 'entries:insulin_dose_create' %}" class="btn btn-primary btn-sm">
+                <i class="bi bi-plus-circle"></i> Add Dose
+            </a>
+            <label for="pageSizeSelect" class="mb-0 me-2">Rows per page:</label>
+            <select id="pageSizeSelect" class="form-select form-select-sm" style="width: auto;">
+                <option value="10" {% if page_size == 10 %}selected{% endif %}>10</option>
+                <option value="25" {% if page_size == 25 %}selected{% endif %}>25</option>
+                <option value="50" {% if page_size == 50 %}selected{% endif %}>50</option>
+                <option value="100" {% if page_size == 100 %}selected{% endif %}>100</option>
+            </select>
+        </div>
+    </div>
+
+    {% if page_obj %}
+        <div class="card">
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Date & Time</th>
+                                <th>Base Units</th>
+                                <th>Correction Units</th>
+                                <th>Total Units</th>
+                                <th>Insulin Type</th>
+                                <th>Added By</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for dose in page_obj %}
+                                <tr>
+                                    <td>{{ dose.occurred_at|date:"Y-m-d H:i" }}</td>
+                                    <td>{{ dose.base_units }}</td>
+                                    <td>{{ dose.correction_units }}</td>
+                                    <td><strong>{{ dose.base_units|add:dose.correction_units }}</strong></td>
+                                    <td>
+                                        <span class="badge bg-info">{{ dose.insulin_type.name }}</span>
+                                        <span class="badge bg-secondary">{{ dose.insulin_type.get_type_display }}</span>
+                                    </td>
+                                    <td>
+                                        {% if dose.last_modified_by %}
+                                            {{ dose.last_modified_by.get_full_name }}
+                                        {% else %}
+                                            <em class="text-muted">Unknown</em>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <a href="{% url 'entries:insulin_dose_edit' dose.pk %}" 
+                                           class="btn btn-sm btn-outline-primary" 
+                                           title="Edit dose">
+                                            <i class="bi bi-pencil"></i> Edit
+                                        </a>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Pagination -->
+                {% if page_obj.has_other_pages %}
+                    <nav aria-label="Page navigation" class="mt-4">
+                        <ul class="pagination justify-content-center">
+                            {% if page_obj.has_previous %}
+                                <li class="page-item">
+                                    <a class="page-link" href="?page=1&page_size={{ page_size }}" aria-label="First">
+                                        <span aria-hidden="true">&laquo;&laquo;</span>
+                                    </a>
+                                </li>
+                                <li class="page-item">
+                                    <a class="page-link" href="?page={{ page_obj.previous_page_number }}&page_size={{ page_size }}" aria-label="Previous">
+                                        <span aria-hidden="true">&laquo;</span>
+                                    </a>
+                                </li>
+                            {% else %}
+                                <li class="page-item disabled">
+                                    <span class="page-link">&laquo;&laquo;</span>
+                                </li>
+                                <li class="page-item disabled">
+                                    <span class="page-link">&laquo;</span>
+                                </li>
+                            {% endif %}
+
+                            <!-- Page numbers -->
+                            {% for num in page_obj.paginator.page_range %}
+                                {% if page_obj.number == num %}
+                                    <li class="page-item active" aria-current="page">
+                                        <span class="page-link">{{ num }}</span>
+                                    </li>
+                                {% elif num > page_obj.number|add:"-3" and num < page_obj.number|add:"3" %}
+                                    <li class="page-item">
+                                        <a class="page-link" href="?page={{ num }}&page_size={{ page_size }}">{{ num }}</a>
+                                    </li>
+                                {% endif %}
+                            {% endfor %}
+
+                            {% if page_obj.has_next %}
+                                <li class="page-item">
+                                    <a class="page-link" href="?page={{ page_obj.next_page_number }}&page_size={{ page_size }}" aria-label="Next">
+                                        <span aria-hidden="true">&raquo;</span>
+                                    </a>
+                                </li>
+                                <li class="page-item">
+                                    <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}&page_size={{ page_size }}" aria-label="Last">
+                                        <span aria-hidden="true">&raquo;&raquo;</span>
+                                    </a>
+                                </li>
+                            {% else %}
+                                <li class="page-item disabled">
+                                    <span class="page-link">&raquo;</span>
+                                </li>
+                                <li class="page-item disabled">
+                                    <span class="page-link">&raquo;&raquo;</span>
+                                </li>
+                            {% endif %}
+                        </ul>
+                        <div class="text-center text-muted small">
+                            Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }} 
+                            ({{ page_obj.paginator.count }} total doses)
+                        </div>
+                    </nav>
+                {% endif %}
+            </div>
+        </div>
+    {% else %}
+        <div class="alert alert-info">
+            <i class="bi bi-info-circle"></i> No insulin doses found.
+        </div>
+    {% endif %}
+</div>
+
+<script>
+    // Handle page size changes
+    document.getElementById('pageSizeSelect').addEventListener('change', function() {
+        const pageSize = this.value;
+        const url = new URL(window.location.href);
+        url.searchParams.set('page_size', pageSize);
+        url.searchParams.set('page', '1'); // Reset to first page
+        window.location.href = url.toString();
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,188 @@
+{% extends "app_layout.html" %}
+{% load static %}
+
+{% block title %}Activity - Diabeateeze{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1><i class="bi bi-clock-history me-2"></i>Activity</h1>
+            </div>
+
+            <!-- Filter Controls -->
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h5 class="card-title mb-3">Filter Activity</h5>
+                    
+                    <!-- Quick Filters -->
+                    <div class="mb-3">
+                        <a href="?filter=today" class="btn btn-primary me-2 {% if filter_type == 'today' %}active{% endif %}">
+                            <i class="bi bi-calendar-day"></i> Today
+                        </a>
+                        <a href="?filter=yesterday" class="btn btn-primary me-2 {% if filter_type == 'yesterday' %}active{% endif %}">
+                            <i class="bi bi-calendar-minus"></i> Yesterday
+                        </a>
+                        <a href="{% url 'entries:activity' %}" class="btn btn-outline-secondary">
+                            <i class="bi bi-x-circle"></i> Clear Filters
+                        </a>
+                    </div>
+
+                    <!-- Custom Date Range -->
+                    <form method="get" class="row g-3">
+                        <div class="col-md-4">
+                            <label for="start_date" class="form-label">Start Date</label>
+                            <input type="date" class="form-control" id="start_date" name="start_date" value="{{ start_date }}">
+                        </div>
+                        <div class="col-md-4">
+                            <label for="end_date" class="form-label">End Date</label>
+                            <input type="date" class="form-control" id="end_date" name="end_date" value="{{ end_date }}">
+                        </div>
+                        <div class="col-md-4 d-flex align-items-end">
+                            <button type="submit" class="btn btn-success">
+                                <i class="bi bi-funnel"></i> Apply Filter
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Activity List -->
+            {% if page_obj %}
+                <div class="card">
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Date & Time</th>
+                                        <th>Type</th>
+                                        <th>Details</th>
+                                        <th>Added By</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for entry in page_obj %}
+                                        <tr>
+                                            <td>{{ entry.occurred_at|date:"Y-m-d H:i" }}</td>
+                                            <td>
+                                                {% if entry.entry_type == "glucose" %}
+                                                    <span class="badge bg-info">
+                                                        <i class="bi bi-droplet-fill"></i> Glucose
+                                                    </span>
+                                                {% elif entry.entry_type == "insulin" %}
+                                                    <span class="badge bg-success">
+                                                        <i class="bi bi-heart-pulse-fill"></i> Insulin
+                                                    </span>
+                                                {% elif entry.entry_type == "meal" %}
+                                                    <span class="badge bg-warning text-dark">
+                                                        <i class="bi bi-egg-fried"></i> Meal
+                                                    </span>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                {% if entry.entry_type == "glucose" %}
+                                                    <strong>{{ entry.value }} {{ entry.unit }}</strong>
+                                                    {% if entry.notes %}
+                                                        <br><small class="text-muted">{{ entry.notes|truncatewords:10 }}</small>
+                                                    {% endif %}
+                                                {% elif entry.entry_type == "insulin" %}
+                                                    <strong>{{ entry.base_units|add:entry.correction_units }} units</strong> ({{ entry.base_units }} base + {{ entry.correction_units }} correction) - {{ entry.insulin_type.name }}
+                                                    <span class="badge bg-secondary">{{ entry.insulin_type.get_type_display }}</span>
+                                                    {% if entry.notes %}
+                                                        <br><small class="text-muted">{{ entry.notes|truncatewords:10 }}</small>
+                                                    {% endif %}
+                                                {% elif entry.entry_type == "meal" %}
+                                                    <strong>{{ entry.get_meal_type_display }}</strong>
+                                                    {% if entry.total_carbs %}
+                                                        - {{ entry.total_carbs }}g carbs
+                                                    {% endif %}
+                                                    <br><small class="text-muted">{{ entry.description|truncatewords:10 }}</small>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                {% if entry.last_modified_by %}
+                                                    {{ entry.last_modified_by.get_full_name }}
+                                                {% else %}
+                                                    <em class="text-muted">Unknown</em>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                {% if entry.entry_type == "glucose" %}
+                                                    <a href="{% url 'entries:glucose_reading_edit' entry.pk %}" class="btn btn-sm btn-outline-primary">
+                                                        <i class="bi bi-pencil"></i> Edit
+                                                    </a>
+                                                {% elif entry.entry_type == "insulin" %}
+                                                    <a href="{% url 'entries:insulin_dose_edit' entry.pk %}" class="btn btn-sm btn-outline-primary">
+                                                        <i class="bi bi-pencil"></i> Edit
+                                                    </a>
+                                                {% elif entry.entry_type == "meal" %}
+                                                    <a href="{% url 'entries:meal_edit' entry.pk %}" class="btn btn-sm btn-outline-primary">
+                                                        <i class="bi bi-pencil"></i> Edit
+                                                    </a>
+                                                {% endif %}
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- Pagination -->
+                        {% if page_obj.has_other_pages %}
+                            <nav aria-label="Activity pagination" class="mt-4">
+                                <ul class="pagination justify-content-center">
+                                    {% if page_obj.has_previous %}
+                                        <li class="page-item">
+                                            <a class="page-link" href="?page={{ page_obj.previous_page_number }}&page_size={{ page_size }}{% if start_date %}&start_date={{ start_date }}{% endif %}{% if end_date %}&end_date={{ end_date }}{% endif %}{% if filter_type %}&filter={{ filter_type }}{% endif %}">Previous</a>
+                                        </li>
+                                    {% endif %}
+
+                                    <li class="page-item active">
+                                        <span class="page-link">
+                                            Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+                                        </span>
+                                    </li>
+
+                                    {% if page_obj.has_next %}
+                                        <li class="page-item">
+                                            <a class="page-link" href="?page={{ page_obj.next_page_number }}&page_size={{ page_size }}{% if start_date %}&start_date={{ start_date }}{% endif %}{% if end_date %}&end_date={{ end_date }}{% endif %}{% if filter_type %}&filter={{ filter_type }}{% endif %}">Next</a>
+                                        </li>
+                                    {% endif %}
+                                </ul>
+                            </nav>
+
+                            <!-- Page Size Selector -->
+                            <div class="text-center">
+                                <label for="pageSizeSelect" class="form-label me-2">Items per page:</label>
+                                <select id="pageSizeSelect" class="form-select d-inline-block w-auto" onchange="changePageSize(this.value)">
+                                    <option value="10" {% if page_size == 10 %}selected{% endif %}>10</option>
+                                    <option value="25" {% if page_size == 25 %}selected{% endif %}>25</option>
+                                    <option value="50" {% if page_size == 50 %}selected{% endif %}>50</option>
+                                    <option value="100" {% if page_size == 100 %}selected{% endif %}>100</option>
+                                </select>
+                            </div>
+
+                            <script>
+                                function changePageSize(size) {
+                                    const url = new URL(window.location);
+                                    url.searchParams.set('page_size', size);
+                                    url.searchParams.set('page', '1'); // Reset to first page
+                                    window.location = url;
+                                }
+                            </script>
+                        {% endif %}
+                    </div>
+                </div>
+            {% else %}
+                <div class="alert alert-info">
+                    <i class="bi bi-info-circle me-2"></i>
+                    No activity found for the selected date range.
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
