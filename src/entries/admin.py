@@ -62,3 +62,12 @@ class CorrectionScaleAdmin(admin.ModelAdmin):
     list_display = ["greater_than", "units_to_add", "created_at", "updated_at"]
     ordering = ["greater_than"]
     search_fields = ["greater_than", "units_to_add"]
+
+
+@admin.register(InsulinSchedule)
+class InsulinScheduleAdmin(admin.ModelAdmin):
+    list_display = ["time", "insulin_type", "base_units", "last_modified_by", "created_at"]
+    list_filter = ["insulin_type", "time"]
+    search_fields = ["insulin_type__name", "notes"]
+    ordering = ["time"]
+    autocomplete_fields = ["last_modified_by", "insulin_type"]
