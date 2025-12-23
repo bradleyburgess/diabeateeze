@@ -19,7 +19,7 @@ env = environ.Env(
 environ.Env.read_env(BASE_DIR / ".env")
 
 # Application version
-VERSION = "1.0.2"
+VERSION = "1.0.3"
 
 # Environment type (development, testing, production)
 ENVIRONMENT = env("DJANGO_ENVIRONMENT")
