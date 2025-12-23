@@ -136,9 +136,15 @@ class Meal(AutoLastModifiedMixin, TimestampedModel):
         return f"{self.get_meal_type_display()} at {self.occurred_at}"  # type: ignore[misc]
 
 
-class InsulinSchedule(TimestampedModel):
+class InsulinSchedule(AutoLastModifiedMixin, TimestampedModel):
     """Scheduled insulin dose times."""
 
+    last_modified_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        related_name="modified_insulin_schedules",
+    )
     label = models.CharField(max_length=100, help_text="Label for this scheduled dose")
     time = models.TimeField(help_text="Scheduled time for this dose")
     insulin_type = models.ForeignKey(

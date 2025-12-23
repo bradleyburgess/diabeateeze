@@ -115,7 +115,13 @@ class InsulinDoseForm(forms.ModelForm):
 
     class Meta:
         model = InsulinDose
-        fields = ["occurred_at", "base_units", "correction_units", "insulin_type", "notes"]
+        fields = [
+            "occurred_at",
+            "base_units",
+            "correction_units",
+            "insulin_type",
+            "notes",
+        ]
         widgets = {
             "occurred_at": forms.DateTimeInput(
                 attrs={

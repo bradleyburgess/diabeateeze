@@ -29,16 +29,24 @@ class GlucoseReadingAdmin(admin.ModelAdmin):
 
 @admin.register(InsulinDose)
 class InsulinDoseAdmin(admin.ModelAdmin):
-    list_display = ["last_modified_by", "occurred_at", "base_units", "correction_units", "total_units", "insulin_type"]
+    list_display = [
+        "last_modified_by",
+        "occurred_at",
+        "base_units",
+        "correction_units",
+        "total_units",
+        "insulin_type",
+    ]
     list_filter = ["insulin_type", "occurred_at"]
     search_fields = ["last_modified_by__email", "notes", "insulin_type__name"]
     date_hierarchy = "occurred_at"
     ordering = ["-occurred_at"]
     autocomplete_fields = ["last_modified_by", "insulin_type"]
-    
+
     def total_units(self, obj):
         """Calculate and display total units."""
         return obj.base_units + obj.correction_units
+
     total_units.short_description = "Total Units"
 
 
@@ -66,8 +74,15 @@ class CorrectionScaleAdmin(admin.ModelAdmin):
 
 @admin.register(InsulinSchedule)
 class InsulinScheduleAdmin(admin.ModelAdmin):
-    list_display = ["time", "insulin_type", "base_units", "last_modified_by", "created_at"]
+    list_display = [
+        "label",
+        "time",
+        "insulin_type",
+        "units",
+        "last_modified_by",
+        "created_at",
+    ]
     list_filter = ["insulin_type", "time"]
-    search_fields = ["insulin_type__name", "notes"]
+    search_fields = ["label", "insulin_type__name", "notes", "last_modified_by__email"]
     ordering = ["time"]
-    autocomplete_fields = ["last_modified_by", "insulin_type"]
+    autocomplete_fields = ["insulin_type", "last_modified_by"]
