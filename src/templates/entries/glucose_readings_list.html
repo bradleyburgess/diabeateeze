@@ -12,41 +12,7 @@
     </div>
 
     <!-- Filter Controls -->
-    <div class="card mb-4">
-        <div class="card-body">
-            <h5 class="card-title mb-3">Filter Readings</h5>
-            
-            <!-- Quick Filters -->
-            <div class="mb-3">
-                <a href="?filter=today" class="btn btn-primary me-2 {% if filter_type == 'today' %}active{% endif %}">
-                    <i class="bi bi-calendar-day"></i> Today
-                </a>
-                <a href="?filter=yesterday" class="btn btn-primary me-2 {% if filter_type == 'yesterday' %}active{% endif %}">
-                    <i class="bi bi-calendar-minus"></i> Yesterday
-                </a>
-                <a href="{% url 'entries:glucose_readings_list' %}" class="btn btn-outline-secondary">
-                    <i class="bi bi-x-circle"></i> Clear Filters
-                </a>
-            </div>
-
-            <!-- Custom Date Range -->
-            <form method="get" class="row g-3">
-                <div class="col-md-4">
-                    <label for="start_date" class="form-label">Start Date</label>
-                    <input type="date" class="form-control" id="start_date" name="start_date" value="{{ start_date }}">
-                </div>
-                <div class="col-md-4">
-                    <label for="end_date" class="form-label">End Date</label>
-                    <input type="date" class="form-control" id="end_date" name="end_date" value="{{ end_date }}">
-                </div>
-                <div class="col-md-4 d-flex align-items-end">
-                    <button type="submit" class="btn btn-success">
-                        <i class="bi bi-funnel"></i> Apply Filter
-                    </button>
-                </div>
-            </form>
-        </div>
-    </div>
+    {% include "entries/_date_filter.html" with filter_label="Readings" clear_url=request.path %}
 
     <!-- Page Size Control -->
     <div class="d-flex justify-content-end align-items-center mb-3">
