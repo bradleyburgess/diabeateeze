@@ -5,6 +5,31 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.5] - 2025-12-24
+
+### Added
+- Export functionality for glucose readings with CSV, Excel, and plain text formats
+- Export dropdown button on glucose readings and activity pages
+- Plain text export uses copy-to-clipboard instead of file download
+- Toast notification for successful clipboard copy
+- Glucose reading text export formatted as bulleted list with date range header
+- Date filter improvements: replaced "Today"/"Yesterday" with "Today"/"2 Days" quick filters
+- JavaScript-powered quick filters using actual date range parameters
+- Django management command for seeding database with sample data (`seed_data`)
+- Root URL (`/`) now redirects to dashboard
+- Dark mode styling fixes for export dropdown menu
+
+### Changed
+- Date filtering now uses URL date range parameters (`?start_date=...&end_date=...`) instead of filter query parameter
+- Simplified `get_date_filters()` utility function
+- Updated glucose reading export text format to `- YYYY/MM/DD HH:MM am/pm: value unit`
+- Export functionality preserves applied date filters
+- Removed `filter_type` from view contexts and templates
+
+### Fixed
+- Export dropdown text visibility in dark mode
+- Test suite updated to match new filtering system (169 tests passing)
+
 ## [1.0.4] - 2025-12-23
 
 ### Added
