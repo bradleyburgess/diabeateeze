@@ -7,6 +7,7 @@ from django.core.paginator import Paginator
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 
+from .exports import get_exporter_for_model
 from .forms import (
     CorrectionScaleForm,
     GlucoseReadingForm,
@@ -27,6 +28,9 @@ def quick_add(request):
 @login_required
 def activity(request):
     """Display all activity (readings, doses, meals) in chronological order."""
+    # Handle export requests
+    export_format = request.GET.get("export")
+    
     # Get date filter parameters
     date_filters = get_date_filters(request)
     start_datetime = date_filters["start_datetime"]
@@ -65,6 +69,33 @@ def activity(request):
         reverse=True,
     )
 
+    # Handle export if requested (before pagination)
+    if export_format in ["csv", "excel", "text"]:
+        # For activity, we need to determine which type to export
+        # Default to glucose readings if not specified
+        export_type = request.GET.get("export_type", "glucose")
+        
+        if export_type == "glucose":
+            exporter_class = get_exporter_for_model(GlucoseReading)
+            exporter = exporter_class(glucose_readings, GlucoseReading)
+        elif export_type == "insulin":
+            exporter_class = get_exporter_for_model(InsulinDose)
+            exporter = exporter_class(insulin_doses, InsulinDose)
+        elif export_type == "meals":
+            exporter_class = get_exporter_for_model(Meal)
+            exporter = exporter_class(meals, Meal)
+        else:
+            # Default to glucose
+            exporter_class = get_exporter_for_model(GlucoseReading)
+            exporter = exporter_class(glucose_readings, GlucoseReading)
+        
+        if export_format == "csv":
+            return exporter.to_csv()
+        elif export_format == "excel":
+            return exporter.to_excel()
+        elif export_format == "text":
+            return exporter.to_text()
+
     # Paginate the combined results
     page_size = request.GET.get("page_size", "50")
     try:
@@ -92,6 +123,9 @@ def activity(request):
 @login_required
 def glucose_readings_list(request):
     """Display paginated list of glucose readings."""
+    # Handle export requests
+    export_format = request.GET.get("export")
+    
     # Get date filter parameters
     date_filters = get_date_filters(request)
     start_datetime = date_filters["start_datetime"]
@@ -118,6 +152,18 @@ def glucose_readings_list(request):
 
     if end_datetime:
         readings = readings.filter(occurred_at__lte=end_datetime)
+
+    # Handle export if requested (before pagination)
+    if export_format in ["csv", "excel", "text"]:
+        exporter_class = get_exporter_for_model(GlucoseReading)
+        exporter = exporter_class(readings, GlucoseReading)
+        
+        if export_format == "csv":
+            return exporter.to_csv()
+        elif export_format == "excel":
+            return exporter.to_excel()
+        elif export_format == "text":
+            return exporter.to_text()
 
     # Paginate
     paginator = Paginator(readings, page_size)

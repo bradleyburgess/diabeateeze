@@ -1,0 +1,62 @@
+<!-- Export dropdown button -->
+<div class="btn-group" role="group">
+    <button type="button" class="btn btn-outline-secondary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+        <i class="bi bi-download"></i> Export
+    </button>
+    <ul class="dropdown-menu">
+        <li>
+            <a class="dropdown-item" href="?export=csv{% for key, value in request.GET.items %}{% if key != 'export' and key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">
+                <i class="bi bi-filetype-csv"></i> Export to CSV
+            </a>
+        </li>
+        <li>
+            <a class="dropdown-item" href="?export=excel{% for key, value in request.GET.items %}{% if key != 'export' and key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">
+                <i class="bi bi-file-earmark-excel"></i> Export to Excel
+            </a>
+        </li>
+        <li>
+            <a class="dropdown-item" href="#" onclick="copyToClipboard('?export=text{% for key, value in request.GET.items %}{% if key != 'export' and key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}'); return false;">
+                <i class="bi bi-clipboard"></i> Copy as Text
+            </a>
+        </li>
+    </ul>
+</div>
+
+<!-- Toast notification for copy feedback -->
+<div class="position-fixed bottom-0 end-0 p-3" style="z-index: 11">
+    <div id="copyToast" class="toast align-items-center text-bg-success border-0" role="alert" aria-live="assertive" aria-atomic="true">
+        <div class="d-flex">
+            <div class="toast-body">
+                <i class="bi bi-check-circle"></i> Copied to clipboard!
+            </div>
+            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+        </div>
+    </div>
+</div>
+
+<script>
+function copyToClipboard(queryString) {
+    // Fetch the text export data
+    fetch(window.location.pathname + queryString)
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Export failed');
+            }
+            return response.text();
+        })
+        .then(text => {
+            // Copy to clipboard
+            return navigator.clipboard.writeText(text);
+        })
+        .then(() => {
+            // Show success toast
+            const toastElement = document.getElementById('copyToast');
+            const toast = new bootstrap.Toast(toastElement);
+            toast.show();
+        })
+        .catch(err => {
+            console.error('Failed to copy:', err);
+            alert('Failed to copy to clipboard. Please try again.');
+        });
+}
+</script>
