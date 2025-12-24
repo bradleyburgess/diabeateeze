@@ -3,7 +3,13 @@ from itertools import chain
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render
 
-from entries.models import GlucoseReading, InsulinDose, Meal
+from entries.models import (
+    CorrectionScale,
+    GlucoseReading,
+    InsulinDose,
+    InsulinSchedule,
+    Meal,
+)
 
 
 @login_required
@@ -31,8 +37,14 @@ def dashboard_view(request):
         reverse=True,
     )[:10]
 
+    # Get insulin schedules and correction scales
+    insulin_schedules = InsulinSchedule.objects.select_related("insulin_type").all()
+    correction_scales = CorrectionScale.objects.all()
+
     context = {
         "recent_entries": all_entries,
+        "insulin_schedules": insulin_schedules,
+        "correction_scales": correction_scales,
     }
 
     return render(request, "dashboard/dashboard.html", context)

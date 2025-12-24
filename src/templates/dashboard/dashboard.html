@@ -57,6 +57,107 @@
         </div>
     </section>
 
+    <!-- Insulin Schedule Section -->
+    <section class="mb-5">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h2 class="mb-0">Insulin Schedule</h2>
+        </div>
+        
+        <div class="row g-4">
+            <!-- Insulin Schedule Table -->
+            <div class="col-lg-6">
+                <div class="card">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">
+                            <i class="bi bi-clock-fill text-primary"></i> Schedule
+                        </h5>
+                        <a href="{% url 'entries:insulin_schedules_list' %}" class="btn btn-sm btn-outline-primary">
+                            <i class="bi bi-gear"></i> Manage
+                        </a>
+                    </div>
+                    <div class="card-body">
+                        {% if insulin_schedules %}
+                            <div class="table-responsive">
+                                <table class="table table-hover mb-0">
+                                    <thead>
+                                        <tr>
+                                            <th>Time</th>
+                                            <th>Label</th>
+                                            <th>Type</th>
+                                            <th class="text-end">Units</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for schedule in insulin_schedules %}
+                                            <tr>
+                                                <td><strong>{{ schedule.time|time:"H:i" }}</strong></td>
+                                                <td>{{ schedule.label }}</td>
+                                                <td><span class="badge bg-success">{{ schedule.insulin_type.name }}</span></td>
+                                                <td class="text-end">{{ schedule.units }} u</td>
+                                            </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        {% else %}
+                            <div class="text-center text-muted py-4">
+                                <i class="bi bi-calendar-x" style="font-size: 2rem;"></i>
+                                <p class="mb-2">No scheduled doses yet</p>
+                                <a href="{% url 'entries:insulin_schedule_create' %}" class="btn btn-sm btn-primary">
+                                    <i class="bi bi-plus-circle"></i> Add Schedule
+                                </a>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Correction Scale Table -->
+            <div class="col-lg-6">
+                <div class="card">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">
+                            <i class="bi bi-calculator-fill text-info"></i> Correction Scale
+                        </h5>
+                        <a href="{% url 'entries:correction_scales_list' %}" class="btn btn-sm btn-outline-primary">
+                            <i class="bi bi-gear"></i> Manage
+                        </a>
+                    </div>
+                    <div class="card-body">
+                        {% if correction_scales %}
+                            <div class="table-responsive">
+                                <table class="table table-hover mb-0">
+                                    <thead>
+                                        <tr>
+                                            <th>Blood Glucose</th>
+                                            <th class="text-end">Add Units</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for scale in correction_scales %}
+                                            <tr>
+                                                <td>Above <strong>{{ scale.greater_than }}</strong> mmol/L</td>
+                                                <td class="text-end"><span class="badge bg-info">+{{ scale.units_to_add }} u</span></td>
+                                            </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        {% else %}
+                            <div class="text-center text-muted py-4">
+                                <i class="bi bi-calculator-x" style="font-size: 2rem;"></i>
+                                <p class="mb-2">No correction scale defined</p>
+                                <a href="{% url 'entries:correction_scale_create' %}" class="btn btn-sm btn-primary">
+                                    <i class="bi bi-plus-circle"></i> Add Scale
+                                </a>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
     <!-- Recent Activity Section -->
     <section class="mb-5">
         <div class="d-flex justify-content-between align-items-center mb-3">

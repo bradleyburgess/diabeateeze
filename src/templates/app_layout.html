@@ -15,8 +15,27 @@
       <!-- Desktop nav items -->
       <div class="collapse navbar-collapse" id="navbarContent">
         <ul class="navbar-nav me-auto">
-          <li class="nav-item">
-            <a class="nav-link" href="{% url 'entries:quick_add' %}">Quick Add</a>
+          <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle" href="#" id="quickAddDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+              Quick Add
+            </a>
+            <ul class="dropdown-menu" aria-labelledby="quickAddDropdown">
+              <li>
+                <a class="dropdown-item" href="{% url 'entries:glucose_reading_create' %}">
+                  <i class="bi bi-droplet-fill text-info"></i> Blood Glucose
+                </a>
+              </li>
+              <li>
+                <a class="dropdown-item" href="{% url 'entries:insulin_dose_create' %}">
+                  <i class="bi bi-heart-pulse-fill text-success"></i> Insulin Dose
+                </a>
+              </li>
+              <li>
+                <a class="dropdown-item" href="{% url 'entries:meal_create' %}">
+                  <i class="bi bi-egg-fried text-warning"></i> Meal
+                </a>
+              </li>
+            </ul>
           </li>
           <li class="nav-item">
             <a class="nav-link" href="{% url 'dashboard:index' %}">Dashboard</a>
@@ -62,7 +81,25 @@
         <div class="offcanvas-body">
           <ul class="navbar-nav">
             <li class="nav-item">
-              <a class="nav-link" href="{% url 'entries:quick_add' %}">Quick Add</a>
+              <h6 class="nav-link text-muted small text-uppercase">Quick Add</h6>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link ps-4" href="{% url 'entries:glucose_reading_create' %}">
+                <i class="bi bi-droplet-fill text-info"></i> Blood Glucose
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link ps-4" href="{% url 'entries:insulin_dose_create' %}">
+                <i class="bi bi-heart-pulse-fill text-success"></i> Insulin Dose
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link ps-4" href="{% url 'entries:meal_create' %}">
+                <i class="bi bi-egg-fried text-warning"></i> Meal
+              </a>
+            </li>
+            <li class="nav-item">
+              <hr class="my-2" />
             </li>
             <li class="nav-item">
               <a class="nav-link" href="{% url 'dashboard:index' %}">Dashboard</a>
