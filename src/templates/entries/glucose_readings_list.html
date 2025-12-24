@@ -5,19 +5,58 @@
 {% block content %}
 <div class="container mt-4">
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h1>Blood Glucose Readings</h1>
-        <div class="d-flex align-items-center gap-2">
-            <a href="{% url 'entries:glucose_reading_create' %}" class="btn btn-primary btn-sm">
-                <i class="bi bi-plus-circle"></i> Add Reading
-            </a>
-            <label for="pageSizeSelect" class="mb-0 me-2">Rows per page:</label>
-            <select id="pageSizeSelect" class="form-select form-select-sm" style="width: auto;">
-                <option value="10" {% if page_size == 10 %}selected{% endif %}>10</option>
-                <option value="25" {% if page_size == 25 %}selected{% endif %}>25</option>
-                <option value="50" {% if page_size == 50 %}selected{% endif %}>50</option>
-                <option value="100" {% if page_size == 100 %}selected{% endif %}>100</option>
-            </select>
+        <h1><i class="bi bi-droplet-fill me-2"></i>Blood Glucose Readings</h1>
+        <a href="{% url 'entries:glucose_reading_create' %}" class="btn btn-primary">
+            <i class="bi bi-plus-circle"></i> Add Reading
+        </a>
+    </div>
+
+    <!-- Filter Controls -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <h5 class="card-title mb-3">Filter Readings</h5>
+            
+            <!-- Quick Filters -->
+            <div class="mb-3">
+                <a href="?filter=today" class="btn btn-primary me-2 {% if filter_type == 'today' %}active{% endif %}">
+                    <i class="bi bi-calendar-day"></i> Today
+                </a>
+                <a href="?filter=yesterday" class="btn btn-primary me-2 {% if filter_type == 'yesterday' %}active{% endif %}">
+                    <i class="bi bi-calendar-minus"></i> Yesterday
+                </a>
+                <a href="{% url 'entries:glucose_readings_list' %}" class="btn btn-outline-secondary">
+                    <i class="bi bi-x-circle"></i> Clear Filters
+                </a>
+            </div>
+
+            <!-- Custom Date Range -->
+            <form method="get" class="row g-3">
+                <div class="col-md-4">
+                    <label for="start_date" class="form-label">Start Date</label>
+                    <input type="date" class="form-control" id="start_date" name="start_date" value="{{ start_date }}">
+                </div>
+                <div class="col-md-4">
+                    <label for="end_date" class="form-label">End Date</label>
+                    <input type="date" class="form-control" id="end_date" name="end_date" value="{{ end_date }}">
+                </div>
+                <div class="col-md-4 d-flex align-items-end">
+                    <button type="submit" class="btn btn-success">
+                        <i class="bi bi-funnel"></i> Apply Filter
+                    </button>
+                </div>
+            </form>
         </div>
+    </div>
+
+    <!-- Page Size Control -->
+    <div class="d-flex justify-content-end align-items-center mb-3">
+        <label for="pageSizeSelect" class="mb-0 me-2">Rows per page:</label>
+        <select id="pageSizeSelect" class="form-select form-select-sm" style="width: auto;">
+            <option value="10" {% if page_size == 10 %}selected{% endif %}>10</option>
+            <option value="25" {% if page_size == 25 %}selected{% endif %}>25</option>
+            <option value="50" {% if page_size == 50 %}selected{% endif %}>50</option>
+            <option value="100" {% if page_size == 100 %}selected{% endif %}>100</option>
+        </select>
     </div>
 
     {% if page_obj %}
@@ -64,12 +103,12 @@
                         <ul class="pagination justify-content-center">
                             {% if page_obj.has_previous %}
                                 <li class="page-item">
-                                    <a class="page-link" href="?page=1&page_size={{ page_size }}" aria-label="First">
+                                    <a class="page-link" href="?page=1&page_size={{ page_size }}&start_date={{ start_date }}&end_date={{ end_date }}&filter={{ filter_type }}" aria-label="First">
                                         <span aria-hidden="true">&laquo;&laquo;</span>
                                     </a>
                                 </li>
                                 <li class="page-item">
-                                    <a class="page-link" href="?page={{ page_obj.previous_page_number }}&page_size={{ page_size }}" aria-label="Previous">
+                                    <a class="page-link" href="?page={{ page_obj.previous_page_number }}&page_size={{ page_size }}&start_date={{ start_date }}&end_date={{ end_date }}&filter={{ filter_type }}" aria-label="Previous">
                                         <span aria-hidden="true">&laquo;</span>
                                     </a>
                                 </li>
@@ -90,19 +129,19 @@
                                     </li>
                                 {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
                                     <li class="page-item">
-                                        <a class="page-link" href="?page={{ num }}&page_size={{ page_size }}">{{ num }}</a>
+                                        <a class="page-link" href="?page={{ num }}&page_size={{ page_size }}&start_date={{ start_date }}&end_date={{ end_date }}&filter={{ filter_type }}">{{ num }}</a>
                                     </li>
                                 {% endif %}
                             {% endfor %}
 
                             {% if page_obj.has_next %}
                                 <li class="page-item">
-                                    <a class="page-link" href="?page={{ page_obj.next_page_number }}&page_size={{ page_size }}" aria-label="Next">
+                                    <a class="page-link" href="?page={{ page_obj.next_page_number }}&page_size={{ page_size }}&start_date={{ start_date }}&end_date={{ end_date }}&filter={{ filter_type }}" aria-label="Next">
                                         <span aria-hidden="true">&raquo;</span>
                                     </a>
                                 </li>
                                 <li class="page-item">
-                                    <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}&page_size={{ page_size }}" aria-label="Last">
+                                    <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}&page_size={{ page_size }}&start_date={{ start_date }}&end_date={{ end_date }}&filter={{ filter_type }}" aria-label="Last">
                                         <span aria-hidden="true">&raquo;&raquo;</span>
                                     </a>
                                 </li>
@@ -137,6 +176,14 @@
         const url = new URL(window.location);
         url.searchParams.set('page_size', pageSize);
         url.searchParams.set('page', '1'); // Reset to first page when changing size
+        // Preserve filter parameters
+        const currentParams = new URLSearchParams(window.location.search);
+        const preserveParams = ['start_date', 'end_date', 'filter'];
+        preserveParams.forEach(param => {
+            if (currentParams.has(param)) {
+                url.searchParams.set(param, currentParams.get(param));
+            }
+        });
         window.location.href = url.toString();
     });
 </script>

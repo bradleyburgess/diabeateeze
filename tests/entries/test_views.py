@@ -110,6 +110,247 @@ class TestGlucoseReadingsListView:
         assert response.status_code == 200
         assert len(response.context["page_obj"]) == 0
 
+    def test_filter_today(self, client, user):
+        """Test filtering readings for today."""
+        client.force_login(user)
+        
+        # Create readings for today and yesterday
+        today = timezone.now()
+        yesterday = today - timezone.timedelta(days=1)
+        
+        today_reading = GlucoseReading.objects.create(
+            occurred_at=today,
+            value=Decimal("5.5"),
+            unit="mmol/L",
+            last_modified_by=user
+        )
+        yesterday_reading = GlucoseReading.objects.create(
+            occurred_at=yesterday,
+            value=Decimal("6.0"),
+            unit="mmol/L",
+            last_modified_by=user
+        )
+        
+        response = client.get(
+            reverse("entries:glucose_readings_list"),
+            {"filter": "today"}
+        )
+        
+        assert response.status_code == 200
+        readings = list(response.context["page_obj"])
+        assert len(readings) == 1
+        assert readings[0].id == today_reading.id
+        assert response.context["filter_type"] == "today"
+
+    def test_filter_yesterday(self, client, user):
+        """Test filtering readings for yesterday."""
+        client.force_login(user)
+        
+        # Create readings for today and yesterday
+        today = timezone.now()
+        yesterday = today - timezone.timedelta(days=1)
+        
+        today_reading = GlucoseReading.objects.create(
+            occurred_at=today,
+            value=Decimal("5.5"),
+            unit="mmol/L",
+            last_modified_by=user
+        )
+        yesterday_reading = GlucoseReading.objects.create(
+            occurred_at=yesterday,
+            value=Decimal("6.0"),
+            unit="mmol/L",
+            last_modified_by=user
+        )
+        
+        response = client.get(
+            reverse("entries:glucose_readings_list"),
+            {"filter": "yesterday"}
+        )
+        
+        assert response.status_code == 200
+        readings = list(response.context["page_obj"])
+        assert len(readings) == 1
+        assert readings[0].id == yesterday_reading.id
+        assert response.context["filter_type"] == "yesterday"
+
+    def test_filter_custom_date_range(self, client, user):
+        """Test filtering readings with custom date range."""
+        client.force_login(user)
+        
+        # Create readings across multiple days
+        now = timezone.now()
+        reading_day1 = GlucoseReading.objects.create(
+            occurred_at=now - timezone.timedelta(days=5),
+            value=Decimal("5.0"),
+            unit="mmol/L",
+            last_modified_by=user
+        )
+        reading_day2 = GlucoseReading.objects.create(
+            occurred_at=now - timezone.timedelta(days=3),
+            value=Decimal("5.5"),
+            unit="mmol/L",
+            last_modified_by=user
+        )
+        reading_day3 = GlucoseReading.objects.create(
+            occurred_at=now - timezone.timedelta(days=1),
+            value=Decimal("6.0"),
+            unit="mmol/L",
+            last_modified_by=user
+        )
+        
+        # Filter for middle day only
+        start_date = (now - timezone.timedelta(days=4)).strftime("%Y-%m-%d")
+        end_date = (now - timezone.timedelta(days=2)).strftime("%Y-%m-%d")
+        
+        response = client.get(
+            reverse("entries:glucose_readings_list"),
+            {"start_date": start_date, "end_date": end_date}
+        )
+        
+        assert response.status_code == 200
+        readings = list(response.context["page_obj"])
+        assert len(readings) == 1
+        assert readings[0].id == reading_day2.id
+        assert response.context["start_date"] == start_date
+        assert response.context["end_date"] == end_date
+
+    def test_filter_start_date_only(self, client, user):
+        """Test filtering with only start date."""
+        client.force_login(user)
+        
+        now = timezone.now()
+        old_reading = GlucoseReading.objects.create(
+            occurred_at=now - timezone.timedelta(days=5),
+            value=Decimal("5.0"),
+            unit="mmol/L",
+            last_modified_by=user
+        )
+        recent_reading1 = GlucoseReading.objects.create(
+            occurred_at=now - timezone.timedelta(days=2),
+            value=Decimal("5.5"),
+            unit="mmol/L",
+            last_modified_by=user
+        )
+        recent_reading2 = GlucoseReading.objects.create(
+            occurred_at=now,
+            value=Decimal("6.0"),
+            unit="mmol/L",
+            last_modified_by=user
+        )
+        
+        start_date = (now - timezone.timedelta(days=3)).strftime("%Y-%m-%d")
+        
+        response = client.get(
+            reverse("entries:glucose_readings_list"),
+            {"start_date": start_date}
+        )
+        
+        assert response.status_code == 200
+        readings = list(response.context["page_obj"])
+        assert len(readings) == 2
+        reading_ids = [r.id for r in readings]
+        assert recent_reading1.id in reading_ids
+        assert recent_reading2.id in reading_ids
+        assert old_reading.id not in reading_ids
+
+    def test_filter_end_date_only(self, client, user):
+        """Test filtering with only end date."""
+        client.force_login(user)
+        
+        now = timezone.now()
+        old_reading1 = GlucoseReading.objects.create(
+            occurred_at=now - timezone.timedelta(days=5),
+            value=Decimal("5.0"),
+            unit="mmol/L",
+            last_modified_by=user
+        )
+        old_reading2 = GlucoseReading.objects.create(
+            occurred_at=now - timezone.timedelta(days=3),
+            value=Decimal("5.5"),
+            unit="mmol/L",
+            last_modified_by=user
+        )
+        recent_reading = GlucoseReading.objects.create(
+            occurred_at=now,
+            value=Decimal("6.0"),
+            unit="mmol/L",
+            last_modified_by=user
+        )
+        
+        end_date = (now - timezone.timedelta(days=2)).strftime("%Y-%m-%d")
+        
+        response = client.get(
+            reverse("entries:glucose_readings_list"),
+            {"end_date": end_date}
+        )
+        
+        assert response.status_code == 200
+        readings = list(response.context["page_obj"])
+        assert len(readings) == 2
+        reading_ids = [r.id for r in readings]
+        assert old_reading1.id in reading_ids
+        assert old_reading2.id in reading_ids
+        assert recent_reading.id not in reading_ids
+
+    def test_filter_preserves_pagination(self, client, user):
+        """Test that filtering works correctly with pagination."""
+        client.force_login(user)
+        
+        # Create 30 readings for today (using different minutes to stay within today)
+        today = timezone.now()
+        today_start = today.replace(hour=8, minute=0, second=0, microsecond=0)
+        for i in range(30):
+            GlucoseReading.objects.create(
+                occurred_at=today_start + timezone.timedelta(minutes=i * 10),
+                value=Decimal("5.5"),
+                unit="mmol/L",
+                last_modified_by=user
+            )
+        
+        # Create 20 readings for yesterday
+        yesterday = today - timezone.timedelta(days=1)
+        yesterday_start = yesterday.replace(hour=8, minute=0, second=0, microsecond=0)
+        for i in range(20):
+            GlucoseReading.objects.create(
+                occurred_at=yesterday_start + timezone.timedelta(minutes=i * 10),
+                value=Decimal("6.0"),
+                unit="mmol/L",
+                last_modified_by=user
+            )
+        
+        # Filter for today with page size of 10
+        response = client.get(
+            reverse("entries:glucose_readings_list"),
+            {"filter": "today", "page_size": "10"}
+        )
+        
+        assert response.status_code == 200
+        assert len(response.context["page_obj"]) == 10
+        assert response.context["page_obj"].paginator.count == 30
+        assert response.context["page_size"] == 10
+
+    def test_no_filter_returns_all_readings(self, client, user):
+        """Test that no filter returns all readings."""
+        client.force_login(user)
+        
+        now = timezone.now()
+        for i in range(5):
+            GlucoseReading.objects.create(
+                occurred_at=now - timezone.timedelta(days=i),
+                value=Decimal("5.5"),
+                unit="mmol/L",
+                last_modified_by=user
+            )
+        
+        response = client.get(reverse("entries:glucose_readings_list"))
+        
+        assert response.status_code == 200
+        assert len(response.context["page_obj"]) == 5
+        assert response.context["filter_type"] == ""
+        assert response.context["start_date"] == ""
+        assert response.context["end_date"] == ""
+
 
 @pytest.mark.django_db
 class TestGlucoseReadingCreateView:

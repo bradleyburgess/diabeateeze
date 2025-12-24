@@ -123,6 +123,43 @@ def activity(request):
 @login_required
 def glucose_readings_list(request):
     """Display paginated list of glucose readings."""
+    # Get date filter parameters
+    start_date = request.GET.get("start_date")
+    end_date = request.GET.get("end_date")
+    filter_type = request.GET.get("filter")  # 'today' or 'yesterday'
+
+    # Initialize date range
+    start_datetime = None
+    end_datetime = None
+
+    # Handle quick filters
+    if filter_type == "today":
+        today = timezone.now().date()
+        start_datetime = timezone.make_aware(
+            datetime.combine(today, datetime.min.time())
+        )
+        end_datetime = timezone.make_aware(datetime.combine(today, datetime.max.time()))
+    elif filter_type == "yesterday":
+        yesterday = timezone.now().date() - timedelta(days=1)
+        start_datetime = timezone.make_aware(
+            datetime.combine(yesterday, datetime.min.time())
+        )
+        end_datetime = timezone.make_aware(
+            datetime.combine(yesterday, datetime.max.time())
+        )
+    elif start_date or end_date:
+        # Handle custom date range
+        if start_date:
+            start_dt = datetime.strptime(start_date, "%Y-%m-%d")
+            start_datetime = timezone.make_aware(
+                datetime.combine(start_dt.date(), datetime.min.time())
+            )
+        if end_date:
+            end_dt = datetime.strptime(end_date, "%Y-%m-%d")
+            end_datetime = timezone.make_aware(
+                datetime.combine(end_dt.date(), datetime.max.time())
+            )
+
     # Get page size from query parameter, default to 50
     page_size = request.GET.get("page_size", "50")
     try:
@@ -138,6 +175,13 @@ def glucose_readings_list(request):
         "-occurred_at"
     )
 
+    # Apply date filters if specified
+    if start_datetime:
+        readings = readings.filter(occurred_at__gte=start_datetime)
+
+    if end_datetime:
+        readings = readings.filter(occurred_at__lte=end_datetime)
+
     # Paginate
     paginator = Paginator(readings, page_size)
     page_number = request.GET.get("page", 1)
@@ -146,6 +190,9 @@ def glucose_readings_list(request):
     context = {
         "page_obj": page_obj,
         "page_size": page_size,
+        "start_date": start_date or "",
+        "end_date": end_date or "",
+        "filter_type": filter_type or "",
     }
 
     return render(request, "entries/glucose_readings_list.html", context)
