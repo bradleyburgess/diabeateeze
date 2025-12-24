@@ -1,12 +1,12 @@
 dev:
-	python manage.py runserver
+	.venv/bin/python manage.py runserver
 
 migrate:
-	python manage.py migrate
+	.venv/bin/python manage.py migrate
 
 test:
-	pytest
+	.venv/bin/pytest
 
 check:
-	black src/
-	python manage.py check
+	.venv/bin/black src/
+	.venv/bin/python manage.py check
