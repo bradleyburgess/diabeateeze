@@ -8,14 +8,19 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('entries', '0011_update_insulin_dose_fields'),
+        ("entries", "0011_update_insulin_dose_fields"),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='insulinschedule',
-            name='last_modified_by',
-            field=models.ForeignKey(null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='modified_insulin_schedules', to=settings.AUTH_USER_MODEL),
+            model_name="insulinschedule",
+            name="last_modified_by",
+            field=models.ForeignKey(
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                related_name="modified_insulin_schedules",
+                to=settings.AUTH_USER_MODEL,
+            ),
         ),
     ]
