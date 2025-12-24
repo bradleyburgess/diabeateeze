@@ -5,6 +5,22 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.6] - 2025-12-24
+
+### Added
+- Insulin Schedule section on dashboard displaying scheduled doses and correction scale tables
+- Insulin schedule and correction scale data now included in dashboard view context
+- Reference tables for insulin schedule and correction scale on insulin dose add page
+- Quick Add navbar link converted to dropdown menu with Blood Glucose, Insulin Dose, and Meal options
+- Icons and color coding for Quick Add dropdown items matching dashboard cards
+- Mobile-optimized Quick Add navigation with nested menu items
+
+### Changed
+- Dashboard layout: Insulin Schedule section moved between Quick Add and Recent Activity sections
+- Insulin schedule and correction scale table width ratio changed from 1:1 to 2:1 on desktop
+- Desktop navbar Quick Add now uses Bootstrap dropdown instead of direct link
+- Mobile navbar Quick Add displays as section header with indented menu items
+
 ## [1.0.5] - 2025-12-24
 
 ### Added
