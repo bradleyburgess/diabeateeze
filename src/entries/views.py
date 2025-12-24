@@ -114,7 +114,6 @@ def activity(request):
         "page_size": page_size,
         "start_date": date_filters["start_date"],
         "end_date": date_filters["end_date"],
-        "filter_type": date_filters["filter_type"],
     }
 
     return render(request, "entries/activity.html", context)
@@ -175,7 +174,6 @@ def glucose_readings_list(request):
         "page_size": page_size,
         "start_date": date_filters["start_date"],
         "end_date": date_filters["end_date"],
-        "filter_type": date_filters["filter_type"],
     }
 
     return render(request, "entries/glucose_readings_list.html", context)

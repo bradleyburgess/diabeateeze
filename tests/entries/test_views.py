@@ -117,6 +117,7 @@ class TestGlucoseReadingsListView:
         # Create readings for today and yesterday
         today = timezone.now()
         yesterday = today - timezone.timedelta(days=1)
+        today_str = today.date().strftime("%Y-%m-%d")
         
         today_reading = GlucoseReading.objects.create(
             occurred_at=today,
@@ -133,22 +134,25 @@ class TestGlucoseReadingsListView:
         
         response = client.get(
             reverse("entries:glucose_readings_list"),
-            {"filter": "today"}
+            {"start_date": today_str, "end_date": today_str}
         )
         
         assert response.status_code == 200
         readings = list(response.context["page_obj"])
         assert len(readings) == 1
         assert readings[0].id == today_reading.id
-        assert response.context["filter_type"] == "today"
 
-    def test_filter_yesterday(self, client, user):
-        """Test filtering readings for yesterday."""
+    def test_filter_two_days(self, client, user):
+        """Test filtering readings for yesterday and today (2 days)."""
         client.force_login(user)
         
-        # Create readings for today and yesterday
+        # Create readings for today, yesterday, and 2 days ago
         today = timezone.now()
         yesterday = today - timezone.timedelta(days=1)
+        two_days_ago = today - timezone.timedelta(days=2)
+        
+        today_str = today.date().strftime("%Y-%m-%d")
+        yesterday_str = yesterday.date().strftime("%Y-%m-%d")
         
         today_reading = GlucoseReading.objects.create(
             occurred_at=today,
@@ -162,17 +166,22 @@ class TestGlucoseReadingsListView:
             unit="mmol/L",
             last_modified_by=user
         )
+        two_days_ago_reading = GlucoseReading.objects.create(
+            occurred_at=two_days_ago,
+            value=Decimal("6.5"),
+            unit="mmol/L",
+            last_modified_by=user
+        )
         
         response = client.get(
             reverse("entries:glucose_readings_list"),
-            {"filter": "yesterday"}
+            {"start_date": yesterday_str, "end_date": today_str}
         )
         
         assert response.status_code == 200
         readings = list(response.context["page_obj"])
-        assert len(readings) == 1
-        assert readings[0].id == yesterday_reading.id
-        assert response.context["filter_type"] == "yesterday"
+        assert len(readings) == 2
+        assert {r.id for r in readings} == {today_reading.id, yesterday_reading.id}
 
     def test_filter_custom_date_range(self, client, user):
         """Test filtering readings with custom date range."""
@@ -320,9 +329,10 @@ class TestGlucoseReadingsListView:
             )
         
         # Filter for today with page size of 10
+        today_str = today.date().strftime("%Y-%m-%d")
         response = client.get(
             reverse("entries:glucose_readings_list"),
-            {"filter": "today", "page_size": "10"}
+            {"start_date": today_str, "end_date": today_str, "page_size": "10"}
         )
         
         assert response.status_code == 200
@@ -347,7 +357,6 @@ class TestGlucoseReadingsListView:
         
         assert response.status_code == 200
         assert len(response.context["page_obj"]) == 5
-        assert response.context["filter_type"] == ""
         assert response.context["start_date"] == ""
         assert response.context["end_date"] == ""
 
@@ -1572,6 +1581,7 @@ class TestActivityView:
         
         today = timezone.now().date()
         yesterday = today - timezone.timedelta(days=1)
+        today_str = today.strftime("%Y-%m-%d")
         
         # Create today's entry
         today_reading = GlucoseReading.objects.create(
@@ -1589,19 +1599,23 @@ class TestActivityView:
             last_modified_by=user
         )
         
-        response = client.get(reverse("entries:activity") + "?filter=today")
+        response = client.get(reverse("entries:activity"), {"start_date": today_str, "end_date": today_str})
         assert response.status_code == 200
         
         entries = list(response.context["page_obj"])
         assert len(entries) == 1
         assert entries[0].pk == today_reading.pk
 
-    def test_yesterday_filter(self, client, user, insulin_type):
-        """Test filtering activity for yesterday."""
+    def test_two_days_filter(self, client, user, insulin_type):
+        """Test filtering activity for yesterday and today (2 days)."""
         client.force_login(user)
         
         today = timezone.now().date()
         yesterday = today - timezone.timedelta(days=1)
+        two_days_ago = today - timezone.timedelta(days=2)
+        
+        today_str = today.strftime("%Y-%m-%d")
+        yesterday_str = yesterday.strftime("%Y-%m-%d")
         
         # Create today's entry
         today_reading = GlucoseReading.objects.create(
@@ -1619,12 +1633,20 @@ class TestActivityView:
             last_modified_by=user
         )
         
-        response = client.get(reverse("entries:activity") + "?filter=yesterday")
+        # Create two days ago entry
+        two_days_ago_reading = GlucoseReading.objects.create(
+            occurred_at=timezone.make_aware(timezone.datetime.combine(two_days_ago, timezone.datetime.min.time()) + timezone.timedelta(hours=10)),
+            value=6.5,
+            unit="mmol/L",
+            last_modified_by=user
+        )
+        
+        response = client.get(reverse("entries:activity"), {"start_date": yesterday_str, "end_date": today_str})
         assert response.status_code == 200
         
         entries = list(response.context["page_obj"])
-        assert len(entries) == 1
-        assert entries[0].pk == yesterday_reading.pk
+        assert len(entries) == 2
+        assert {e.pk for e in entries} == {today_reading.pk, yesterday_reading.pk}
 
     def test_custom_date_range_filter(self, client, user):
         """Test filtering activity with custom date range."""

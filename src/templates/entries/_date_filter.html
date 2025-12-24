@@ -5,16 +5,55 @@
         
         <!-- Quick Filters -->
         <div class="mb-3">
-            <a href="?filter=today" class="btn btn-primary me-2 {% if filter_type == 'today' %}active{% endif %}">
+            <button type="button" class="btn btn-primary me-2" onclick="filterToday()" id="todayBtn">
                 <i class="bi bi-calendar-day"></i> Today
-            </a>
-            <a href="?filter=yesterday" class="btn btn-primary me-2 {% if filter_type == 'yesterday' %}active{% endif %}">
-                <i class="bi bi-calendar-minus"></i> Yesterday
-            </a>
+            </button>
+            <button type="button" class="btn btn-primary me-2" onclick="filterTwoDays()" id="twoDaysBtn">
+                <i class="bi bi-calendar-week"></i> 2 Days
+            </button>
             <a href="{{ clear_url }}" class="btn btn-outline-secondary">
                 <i class="bi bi-x-circle"></i> Clear Filters
             </a>
         </div>
+
+        <script>
+        function getTodayDate() {
+            const today = new Date();
+            return today.toISOString().split('T')[0];
+        }
+
+        function getYesterdayDate() {
+            const yesterday = new Date();
+            yesterday.setDate(yesterday.getDate() - 1);
+            return yesterday.toISOString().split('T')[0];
+        }
+
+        function filterToday() {
+            const today = getTodayDate();
+            window.location.href = '?start_date=' + today + '&end_date=' + today;
+        }
+
+        function filterTwoDays() {
+            const today = getTodayDate();
+            const yesterday = getYesterdayDate();
+            window.location.href = '?start_date=' + yesterday + '&end_date=' + today;
+        }
+
+        // Highlight active button based on current URL params
+        window.addEventListener('DOMContentLoaded', function() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const startDate = urlParams.get('start_date');
+            const endDate = urlParams.get('end_date');
+            const today = getTodayDate();
+            const yesterday = getYesterdayDate();
+
+            if (startDate === today && endDate === today) {
+                document.getElementById('todayBtn').classList.add('active');
+            } else if (startDate === yesterday && endDate === today) {
+                document.getElementById('twoDaysBtn').classList.add('active');
+            }
+        });
+        </script>
 
         <!-- Custom Date Range -->
         <form method="get" class="row g-3">

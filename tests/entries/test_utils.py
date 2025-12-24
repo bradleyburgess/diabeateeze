@@ -24,30 +24,33 @@ class TestGetDateFilters:
         assert result["end_datetime"] is None
         assert result["start_date"] == ""
         assert result["end_date"] == ""
-        assert result["filter_type"] == ""
 
     def test_today_filter(self):
-        """Test today quick filter."""
-        request = self.factory.get("/", {"filter": "today"})
+        """Test filtering for today using date range."""
+        today = timezone.now().date().strftime("%Y-%m-%d")
+        request = self.factory.get("/", {
+            "start_date": today,
+            "end_date": today
+        })
         result = get_date_filters(request)
         
-        today = timezone.now().date()
-        assert result["start_datetime"].date() == today
-        assert result["end_datetime"].date() == today
-        assert result["filter_type"] == "today"
+        today_date = timezone.now().date()
+        assert result["start_datetime"].date() == today_date
+        assert result["end_datetime"].date() == today_date
 
-    def test_yesterday_filter(self):
-        """Test yesterday quick filter."""
-        request = self.factory.get("/", {"filter": "yesterday"})
-        result = get_date_filters(request)
+    def test_two_days_filter(self):
+        """Test filtering for yesterday and today using date range."""
+        today = timezone.now().date()
+        yesterday = today - timezone.timedelta(days=1)
         
-        yesterday = timezone.now().date()
-        from datetime import timedelta
-        yesterday = yesterday - timedelta(days=1)
+        request = self.factory.get("/", {
+            "start_date": yesterday.strftime("%Y-%m-%d"),
+            "end_date": today.strftime("%Y-%m-%d")
+        })
+        result = get_date_filters(request)
         
         assert result["start_datetime"].date() == yesterday
-        assert result["end_datetime"].date() == yesterday
-        assert result["filter_type"] == "yesterday"
+        assert result["end_datetime"].date() == today
 
     def test_custom_date_range(self):
         """Test custom date range filter."""
@@ -61,7 +64,6 @@ class TestGetDateFilters:
         assert result["end_datetime"].date() == datetime(2023, 1, 31).date()
         assert result["start_date"] == "2023-01-01"
         assert result["end_date"] == "2023-01-31"
-        assert result["filter_type"] == ""
 
     def test_start_date_only(self):
         """Test with only start date."""
@@ -82,18 +84,3 @@ class TestGetDateFilters:
         assert result["end_datetime"].date() == datetime(2023, 12, 31).date()
         assert result["start_date"] == ""
         assert result["end_date"] == "2023-12-31"
-
-    def test_quick_filter_overrides_custom_dates(self):
-        """Test that quick filters take precedence over custom dates."""
-        request = self.factory.get("/", {
-            "filter": "today",
-            "start_date": "2023-01-01",
-            "end_date": "2023-01-31"
-        })
-        result = get_date_filters(request)
-        
-        # Should use today, not the custom dates
-        today = timezone.now().date()
-        assert result["start_datetime"].date() == today
-        assert result["end_datetime"].date() == today
-        assert result["filter_type"] == "today"

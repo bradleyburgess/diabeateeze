@@ -60,9 +60,9 @@ class TestGlucoseReadingExporter:
         )
         exporter = GlucoseReadingExporter(GlucoseReading.objects.all(), GlucoseReading)
         text = exporter.format_text_entry(reading)
-        assert "Glucose Reading" in text
+        # New format is: "- 2025/12/24 7:46 am: 7.5 mmol/L"
+        assert text.startswith("- ")
         assert "7.5 mmol/L" in text
-        assert "Test note" in text
 
     def test_to_csv(self, user):
         """Test CSV export."""
