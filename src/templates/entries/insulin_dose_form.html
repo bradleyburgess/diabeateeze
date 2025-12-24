@@ -106,6 +106,91 @@
                     </form>
                 </div>
             </div>
+
+            {% if not dose %}
+            <!-- Reference Tables (only shown when adding new dose) -->
+            <div class="row g-4 mt-3">
+                <!-- Insulin Schedule Table -->
+                <div class="col-lg-8">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="mb-0">
+                                <i class="bi bi-clock-fill text-primary"></i> Insulin Schedule
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            {% if insulin_schedules %}
+                                <div class="table-responsive">
+                                    <table class="table table-sm table-hover mb-0">
+                                        <thead>
+                                            <tr>
+                                                <th>Time</th>
+                                                <th>Label</th>
+                                                <th>Type</th>
+                                                <th class="text-end">Units</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for schedule in insulin_schedules %}
+                                                <tr>
+                                                    <td><strong>{{ schedule.time|time:"H:i" }}</strong></td>
+                                                    <td>{{ schedule.label }}</td>
+                                                    <td><span class="badge bg-success">{{ schedule.insulin_type.name }}</span></td>
+                                                    <td class="text-end">{{ schedule.units }} u</td>
+                                                </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            {% else %}
+                                <div class="text-center text-muted py-3">
+                                    <i class="bi bi-calendar-x" style="font-size: 1.5rem;"></i>
+                                    <p class="mb-0 small">No scheduled doses</p>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Correction Scale Table -->
+                <div class="col-lg-4">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="mb-0">
+                                <i class="bi bi-calculator-fill text-info"></i> Correction Scale
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            {% if correction_scales %}
+                                <div class="table-responsive">
+                                    <table class="table table-sm table-hover mb-0">
+                                        <thead>
+                                            <tr>
+                                                <th>Blood Glucose</th>
+                                                <th class="text-end">Add Units</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for scale in correction_scales %}
+                                                <tr>
+                                                    <td>Above <strong>{{ scale.greater_than }}</strong> mmol/L</td>
+                                                    <td class="text-end"><span class="badge bg-info">+{{ scale.units_to_add }} u</span></td>
+                                                </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            {% else %}
+                                <div class="text-center text-muted py-3">
+                                    <i class="bi bi-calculator-x" style="font-size: 1.5rem;"></i>
+                                    <p class="mb-0 small">No correction scale defined</p>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
         </div>
     </div>
 </div>

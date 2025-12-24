@@ -369,12 +369,18 @@ def insulin_dose_create(request):
     else:
         form = InsulinDoseForm()
 
+    # Get insulin schedules and correction scales for reference
+    insulin_schedules = InsulinSchedule.objects.select_related("insulin_type").all()
+    correction_scales = CorrectionScale.objects.all()
+
     return render(
         request,
         "entries/insulin_dose_form.html",
         {
             "form": form,
             "title": "Add Insulin Dose",
+            "insulin_schedules": insulin_schedules,
+            "correction_scales": correction_scales,
         },
     )
 
