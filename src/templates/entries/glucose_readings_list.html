@@ -35,7 +35,18 @@
                     <table class="table table-hover">
                         <thead>
                             <tr>
-                                <th>Date & Time</th>
+                                <th>
+                                    <a href="?sort={% if sort_order == 'desc' %}asc{% else %}desc{% endif %}&page_size={{ page_size }}&start_date={{ start_date }}&end_date={{ end_date }}" 
+                                       class="text-decoration-none text-body"
+                                       title="Sort by date">
+                                        Date & Time
+                                        {% if sort_order == 'desc' %}
+                                            <i class="bi bi-sort-down"></i>
+                                        {% else %}
+                                            <i class="bi bi-sort-up"></i>
+                                        {% endif %}
+                                    </a>
+                                </th>
                                 <th>Reading</th>
                                 <th>Added By</th>
                                 <th>Actions</th>
@@ -72,12 +83,12 @@
                         <ul class="pagination justify-content-center">
                             {% if page_obj.has_previous %}
                                 <li class="page-item">
-                                    <a class="page-link" href="?page=1&page_size={{ page_size }}&start_date={{ start_date }}&end_date={{ end_date }}&filter={{ filter_type }}" aria-label="First">
+                                    <a class="page-link" href="?page=1&page_size={{ page_size }}&start_date={{ start_date }}&end_date={{ end_date }}&filter={{ filter_type }}&sort={{ sort_order }}" aria-label="First">
                                         <span aria-hidden="true">&laquo;&laquo;</span>
                                     </a>
                                 </li>
                                 <li class="page-item">
-                                    <a class="page-link" href="?page={{ page_obj.previous_page_number }}&page_size={{ page_size }}&start_date={{ start_date }}&end_date={{ end_date }}&filter={{ filter_type }}" aria-label="Previous">
+                                    <a class="page-link" href="?page={{ page_obj.previous_page_number }}&page_size={{ page_size }}&start_date={{ start_date }}&end_date={{ end_date }}&filter={{ filter_type }}&sort={{ sort_order }}" aria-label="Previous">
                                         <span aria-hidden="true">&laquo;</span>
                                     </a>
                                 </li>
@@ -98,19 +109,19 @@
                                     </li>
                                 {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
                                     <li class="page-item">
-                                        <a class="page-link" href="?page={{ num }}&page_size={{ page_size }}&start_date={{ start_date }}&end_date={{ end_date }}&filter={{ filter_type }}">{{ num }}</a>
+                                        <a class="page-link" href="?page={{ num }}&page_size={{ page_size }}&start_date={{ start_date }}&end_date={{ end_date }}&filter={{ filter_type }}&sort={{ sort_order }}">{{ num }}</a>
                                     </li>
                                 {% endif %}
                             {% endfor %}
 
                             {% if page_obj.has_next %}
                                 <li class="page-item">
-                                    <a class="page-link" href="?page={{ page_obj.next_page_number }}&page_size={{ page_size }}&start_date={{ start_date }}&end_date={{ end_date }}&filter={{ filter_type }}" aria-label="Next">
+                                    <a class="page-link" href="?page={{ page_obj.next_page_number }}&page_size={{ page_size }}&start_date={{ start_date }}&end_date={{ end_date }}&filter={{ filter_type }}&sort={{ sort_order }}" aria-label="Next">
                                         <span aria-hidden="true">&raquo;</span>
                                     </a>
                                 </li>
                                 <li class="page-item">
-                                    <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}&page_size={{ page_size }}&start_date={{ start_date }}&end_date={{ end_date }}&filter={{ filter_type }}" aria-label="Last">
+                                    <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}&page_size={{ page_size }}&start_date={{ start_date }}&end_date={{ end_date }}&filter={{ filter_type }}&sort={{ sort_order }}" aria-label="Last">
                                         <span aria-hidden="true">&raquo;&raquo;</span>
                                     </a>
                                 </li>
@@ -145,9 +156,9 @@
         const url = new URL(window.location);
         url.searchParams.set('page_size', pageSize);
         url.searchParams.set('page', '1'); // Reset to first page when changing size
-        // Preserve filter parameters
+        // Preserve filter and sort parameters
         const currentParams = new URLSearchParams(window.location.search);
-        const preserveParams = ['start_date', 'end_date', 'filter'];
+        const preserveParams = ['start_date', 'end_date', 'filter', 'sort'];
         preserveParams.forEach(param => {
             if (currentParams.has(param)) {
                 url.searchParams.set(param, currentParams.get(param));

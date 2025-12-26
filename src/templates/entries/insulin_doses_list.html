@@ -6,18 +6,23 @@
 <div class="container mt-4">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h1>Insulin Doses</h1>
-        <div class="d-flex align-items-center gap-2">
-            <a href="{% url 'entries:insulin_dose_create' %}" class="btn btn-primary btn-sm">
-                <i class="bi bi-plus-circle"></i> Add Dose
-            </a>
-            <label for="pageSizeSelect" class="mb-0 me-2">Rows per page:</label>
-            <select id="pageSizeSelect" class="form-select form-select-sm" style="width: auto;">
-                <option value="10" {% if page_size == 10 %}selected{% endif %}>10</option>
-                <option value="25" {% if page_size == 25 %}selected{% endif %}>25</option>
-                <option value="50" {% if page_size == 50 %}selected{% endif %}>50</option>
-                <option value="100" {% if page_size == 100 %}selected{% endif %}>100</option>
-            </select>
-        </div>
+        <a href="{% url 'entries:insulin_dose_create' %}" class="btn btn-primary">
+            <i class="bi bi-plus-circle"></i> Add Dose
+        </a>
+    </div>
+
+    <!-- Filter Controls -->
+    {% include "entries/_date_filter.html" with filter_label="Doses" clear_url=request.path %}
+
+    <!-- Page Size Control -->
+    <div class="d-flex justify-content-end align-items-center mb-3">
+        <label for="pageSizeSelect" class="mb-0 me-2">Rows per page:</label>
+        <select id="pageSizeSelect" class="form-select form-select-sm" style="width: auto;">
+            <option value="10" {% if page_size == 10 %}selected{% endif %}>10</option>
+            <option value="25" {% if page_size == 25 %}selected{% endif %}>25</option>
+            <option value="50" {% if page_size == 50 %}selected{% endif %}>50</option>
+            <option value="100" {% if page_size == 100 %}selected{% endif %}>100</option>
+        </select>
     </div>
 
     {% if page_obj %}
@@ -27,7 +32,18 @@
                     <table class="table table-hover">
                         <thead>
                             <tr>
-                                <th>Date & Time</th>
+                                <th>
+                                    <a href="?sort={% if sort_order == 'desc' %}asc{% else %}desc{% endif %}&page_size={{ page_size }}&start_date={{ start_date }}&end_date={{ end_date }}" 
+                                       class="text-decoration-none text-dark"
+                                       title="Sort by date">
+                                        Date & Time
+                                        {% if sort_order == 'desc' %}
+                                            <i class="bi bi-sort-down"></i>
+                                        {% else %}
+                                            <i class="bi bi-sort-up"></i>
+                                        {% endif %}
+                                    </a>
+                                </th>
                                 <th>Base Units</th>
                                 <th>Correction Units</th>
                                 <th>Total Units</th>
@@ -73,12 +89,12 @@
                         <ul class="pagination justify-content-center">
                             {% if page_obj.has_previous %}
                                 <li class="page-item">
-                                    <a class="page-link" href="?page=1&page_size={{ page_size }}" aria-label="First">
+                                    <a class="page-link" href="?page=1&page_size={{ page_size }}&sort={{ sort_order }}&start_date={{ start_date }}&end_date={{ end_date }}" aria-label="First">
                                         <span aria-hidden="true">&laquo;&laquo;</span>
                                     </a>
                                 </li>
                                 <li class="page-item">
-                                    <a class="page-link" href="?page={{ page_obj.previous_page_number }}&page_size={{ page_size }}" aria-label="Previous">
+                                    <a class="page-link" href="?page={{ page_obj.previous_page_number }}&page_size={{ page_size }}&sort={{ sort_order }}&start_date={{ start_date }}&end_date={{ end_date }}" aria-label="Previous">
                                         <span aria-hidden="true">&laquo;</span>
                                     </a>
                                 </li>
@@ -99,19 +115,19 @@
                                     </li>
                                 {% elif num > page_obj.number|add:"-3" and num < page_obj.number|add:"3" %}
                                     <li class="page-item">
-                                        <a class="page-link" href="?page={{ num }}&page_size={{ page_size }}">{{ num }}</a>
+                                        <a class="page-link" href="?page={{ num }}&page_size={{ page_size }}&sort={{ sort_order }}&start_date={{ start_date }}&end_date={{ end_date }}">{{ num }}</a>
                                     </li>
                                 {% endif %}
                             {% endfor %}
 
                             {% if page_obj.has_next %}
                                 <li class="page-item">
-                                    <a class="page-link" href="?page={{ page_obj.next_page_number }}&page_size={{ page_size }}" aria-label="Next">
+                                    <a class="page-link" href="?page={{ page_obj.next_page_number }}&page_size={{ page_size }}&sort={{ sort_order }}&start_date={{ start_date }}&end_date={{ end_date }}" aria-label="Next">
                                         <span aria-hidden="true">&raquo;</span>
                                     </a>
                                 </li>
                                 <li class="page-item">
-                                    <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}&page_size={{ page_size }}" aria-label="Last">
+                                    <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}&page_size={{ page_size }}&sort={{ sort_order }}&start_date={{ start_date }}&end_date={{ end_date }}" aria-label="Last">
                                         <span aria-hidden="true">&raquo;&raquo;</span>
                                     </a>
                                 </li>
@@ -146,6 +162,14 @@
         const url = new URL(window.location.href);
         url.searchParams.set('page_size', pageSize);
         url.searchParams.set('page', '1'); // Reset to first page
+        // Preserve sort and filter parameters
+        const currentParams = new URLSearchParams(window.location.search);
+        const preserveParams = ['sort', 'start_date', 'end_date'];
+        preserveParams.forEach(param => {
+            if (currentParams.has(param)) {
+                url.searchParams.set(param, currentParams.get(param));
+            }
+        });
         window.location.href = url.toString();
     });
 </script>

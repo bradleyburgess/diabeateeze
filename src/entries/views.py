@@ -30,7 +30,7 @@ def activity(request):
     """Display all activity (readings, doses, meals) in chronological order."""
     # Handle export requests
     export_format = request.GET.get("export")
-    
+
     # Get date filter parameters
     date_filters = get_date_filters(request)
     start_datetime = date_filters["start_datetime"]
@@ -74,7 +74,7 @@ def activity(request):
         # For activity, we need to determine which type to export
         # Default to glucose readings if not specified
         export_type = request.GET.get("export_type", "glucose")
-        
+
         if export_type == "glucose":
             exporter_class = get_exporter_for_model(GlucoseReading)
             exporter = exporter_class(glucose_readings, GlucoseReading)
@@ -88,7 +88,7 @@ def activity(request):
             # Default to glucose
             exporter_class = get_exporter_for_model(GlucoseReading)
             exporter = exporter_class(glucose_readings, GlucoseReading)
-        
+
         if export_format == "csv":
             return exporter.to_csv()
         elif export_format == "excel":
@@ -124,7 +124,7 @@ def glucose_readings_list(request):
     """Display paginated list of glucose readings."""
     # Handle export requests
     export_format = request.GET.get("export")
-    
+
     # Get date filter parameters
     date_filters = get_date_filters(request)
     start_datetime = date_filters["start_datetime"]
@@ -140,9 +140,15 @@ def glucose_readings_list(request):
     except (ValueError, TypeError):
         page_size = 50
 
-    # Get all readings ordered by most recent first
+    # Get sort parameter, default to descending (newest first)
+    sort_order = request.GET.get("sort", "desc")
+    if sort_order not in ["asc", "desc"]:
+        sort_order = "desc"
+
+    # Get all readings with sorting
+    order_by = "occurred_at" if sort_order == "asc" else "-occurred_at"
     readings = GlucoseReading.objects.select_related("last_modified_by").order_by(
-        "-occurred_at"
+        order_by
     )
 
     # Apply date filters if specified
@@ -156,7 +162,7 @@ def glucose_readings_list(request):
     if export_format in ["csv", "excel", "text"]:
         exporter_class = get_exporter_for_model(GlucoseReading)
         exporter = exporter_class(readings, GlucoseReading)
-        
+
         if export_format == "csv":
             return exporter.to_csv()
         elif export_format == "excel":
@@ -174,6 +180,7 @@ def glucose_readings_list(request):
         "page_size": page_size,
         "start_date": date_filters["start_date"],
         "end_date": date_filters["end_date"],
+        "sort_order": sort_order,
     }
 
     return render(request, "entries/glucose_readings_list.html", context)
@@ -241,6 +248,11 @@ def glucose_reading_edit(request, pk):
 @login_required
 def meals_list(request):
     """Display paginated list of meals."""
+    # Get date filter parameters
+    date_filters = get_date_filters(request)
+    start_datetime = date_filters["start_datetime"]
+    end_datetime = date_filters["end_datetime"]
+
     # Get page size from query parameter, default to 50
     page_size = request.GET.get("page_size", "50")
     try:
@@ -251,8 +263,21 @@ def meals_list(request):
     except (ValueError, TypeError):
         page_size = 50
 
-    # Get all meals ordered by most recent first
-    meals = Meal.objects.select_related("last_modified_by").order_by("-occurred_at")
+    # Get sort parameter, default to descending (newest first)
+    sort_order = request.GET.get("sort", "desc")
+    if sort_order not in ["asc", "desc"]:
+        sort_order = "desc"
+
+    # Get all meals with sorting
+    order_by = "occurred_at" if sort_order == "asc" else "-occurred_at"
+    meals = Meal.objects.select_related("last_modified_by").order_by(order_by)
+
+    # Apply date filters if specified
+    if start_datetime:
+        meals = meals.filter(occurred_at__gte=start_datetime)
+
+    if end_datetime:
+        meals = meals.filter(occurred_at__lte=end_datetime)
 
     # Paginate
     paginator = Paginator(meals, page_size)
@@ -262,6 +287,9 @@ def meals_list(request):
     context = {
         "page_obj": page_obj,
         "page_size": page_size,
+        "sort_order": sort_order,
+        "start_date": date_filters["start_date"],
+        "end_date": date_filters["end_date"],
     }
 
     return render(request, "entries/meals_list.html", context)
@@ -327,6 +355,11 @@ def meal_edit(request, pk):
 @login_required
 def insulin_doses_list(request):
     """Display paginated list of insulin doses."""
+    # Get date filter parameters
+    date_filters = get_date_filters(request)
+    start_datetime = date_filters["start_datetime"]
+    end_datetime = date_filters["end_datetime"]
+
     # Get page size from query parameter, default to 50
     page_size = request.GET.get("page_size", "50")
     try:
@@ -337,10 +370,23 @@ def insulin_doses_list(request):
     except (ValueError, TypeError):
         page_size = 50
 
-    # Get all doses ordered by most recent first
+    # Get sort parameter, default to descending (newest first)
+    sort_order = request.GET.get("sort", "desc")
+    if sort_order not in ["asc", "desc"]:
+        sort_order = "desc"
+
+    # Get all doses with sorting
+    order_by = "occurred_at" if sort_order == "asc" else "-occurred_at"
     doses = InsulinDose.objects.select_related(
         "last_modified_by", "insulin_type"
-    ).order_by("-occurred_at")
+    ).order_by(order_by)
+
+    # Apply date filters if specified
+    if start_datetime:
+        doses = doses.filter(occurred_at__gte=start_datetime)
+
+    if end_datetime:
+        doses = doses.filter(occurred_at__lte=end_datetime)
 
     # Paginate
     paginator = Paginator(doses, page_size)
@@ -350,6 +396,9 @@ def insulin_doses_list(request):
     context = {
         "page_obj": page_obj,
         "page_size": page_size,
+        "sort_order": sort_order,
+        "start_date": date_filters["start_date"],
+        "end_date": date_filters["end_date"],
     }
 
     return render(request, "entries/insulin_doses_list.html", context)

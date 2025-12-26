@@ -1,4 +1,5 @@
 """Utility functions for entries app."""
+
 from datetime import datetime, timedelta
 from django.utils import timezone
 
@@ -6,7 +7,7 @@ from django.utils import timezone
 def get_date_filters(request):
     """
     Extract and process date filter parameters from request.
-    
+
     Returns a dictionary containing:
     - start_datetime: timezone-aware datetime for start of range (or None)
     - end_datetime: timezone-aware datetime for end of range (or None)

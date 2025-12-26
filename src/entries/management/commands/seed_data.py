@@ -1,4 +1,5 @@
 """Management command to seed the database with sample data."""
+
 import random
 from datetime import datetime, timedelta
 from decimal import Decimal
@@ -68,8 +69,12 @@ class Command(BaseCommand):
             if created:
                 self.stdout.write(f"Created insulin type: {name}")
 
-        rapid_acting = [it for it in insulin_types if it.type == InsulinType.Type.RAPID_ACTING]
-        long_acting = [it for it in insulin_types if it.type == InsulinType.Type.LONG_ACTING]
+        rapid_acting = [
+            it for it in insulin_types if it.type == InsulinType.Type.RAPID_ACTING
+        ]
+        long_acting = [
+            it for it in insulin_types if it.type == InsulinType.Type.LONG_ACTING
+        ]
 
         # Generate data for the past N days
         now = timezone.now()
@@ -91,25 +96,39 @@ class Command(BaseCommand):
 
             # Add extra readings randomly
             if num_readings > 4:
-                reading_times.append(date.replace(hour=random.randint(9, 11), minute=random.randint(0, 59)))
+                reading_times.append(
+                    date.replace(
+                        hour=random.randint(9, 11), minute=random.randint(0, 59)
+                    )
+                )
             if num_readings > 5:
-                reading_times.append(date.replace(hour=random.randint(15, 17), minute=random.randint(0, 59)))
+                reading_times.append(
+                    date.replace(
+                        hour=random.randint(15, 17), minute=random.randint(0, 59)
+                    )
+                )
 
             for reading_time in reading_times[:num_readings]:
                 # Generate realistic glucose values (4.0-12.0 mmol/L)
                 value = Decimal(str(round(random.uniform(4.0, 12.0), 1)))
-                
+
                 GlucoseReading.objects.create(
                     occurred_at=reading_time,
                     value=value,
                     unit="mmol/L",
-                    notes="" if random.random() > 0.3 else random.choice([
-                        "Before meal",
-                        "After meal",
-                        "Before exercise",
-                        "Feeling low",
-                        "Feeling high",
-                    ]),
+                    notes=(
+                        ""
+                        if random.random() > 0.3
+                        else random.choice(
+                            [
+                                "Before meal",
+                                "After meal",
+                                "Before exercise",
+                                "Feeling low",
+                                "Feeling high",
+                            ]
+                        )
+                    ),
                     last_modified_by=user,
                 )
                 glucose_count += 1
@@ -120,7 +139,9 @@ class Command(BaseCommand):
                 date.replace(hour=7, minute=random.randint(30, 59)),  # Breakfast
                 date.replace(hour=12, minute=random.randint(30, 59)),  # Lunch
                 date.replace(hour=18, minute=random.randint(30, 59)),  # Dinner
-                date.replace(hour=22, minute=random.randint(30, 59)),  # Bedtime (long-acting)
+                date.replace(
+                    hour=22, minute=random.randint(30, 59)
+                ),  # Bedtime (long-acting)
             ]
 
             for i, dose_time in enumerate(dose_times[:num_doses]):
@@ -155,7 +176,11 @@ class Command(BaseCommand):
                 date.replace(hour=18, minute=random.randint(0, 30)),  # Dinner
             ]
             if len(meal_types) > 3:
-                meal_times.append(date.replace(hour=random.randint(15, 16), minute=random.randint(0, 59)))
+                meal_times.append(
+                    date.replace(
+                        hour=random.randint(15, 16), minute=random.randint(0, 59)
+                    )
+                )
 
             meal_descriptions = {
                 "breakfast": [
@@ -186,7 +211,11 @@ class Command(BaseCommand):
 
             for meal_type, meal_time in zip(meal_types, meal_times):
                 description = random.choice(meal_descriptions[meal_type])
-                carbs = Decimal(str(random.randint(30, 80))) if random.random() > 0.3 else None
+                carbs = (
+                    Decimal(str(random.randint(30, 80)))
+                    if random.random() > 0.3
+                    else None
+                )
 
                 Meal.objects.create(
                     occurred_at=meal_time,

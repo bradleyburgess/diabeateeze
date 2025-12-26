@@ -1,4 +1,5 @@
 """Export functionality for entries models."""
+
 import csv
 import io
 from datetime import datetime
@@ -51,7 +52,9 @@ class BaseExporter:
         for col, header in enumerate(headers, start=1):
             cell = ws.cell(row=1, column=col, value=header)
             cell.font = Font(bold=True)
-            cell.fill = PatternFill(start_color="CCCCCC", end_color="CCCCCC", fill_type="solid")
+            cell.fill = PatternFill(
+                start_color="CCCCCC", end_color="CCCCCC", fill_type="solid"
+            )
 
         # Add data rows
         for row_idx, obj in enumerate(self.queryset, start=2):
@@ -122,31 +125,35 @@ class GlucoseReadingExporter(BaseExporter):
         response["Content-Disposition"] = f'attachment; filename="{filename}"'
 
         lines = []
-        
+
         # Determine date range from queryset
         readings_list = list(self.queryset)
         if readings_list:
             dates = [r.occurred_at for r in readings_list]
             earliest = min(dates)
             latest = max(dates)
-            
+
             if earliest.date() == latest.date():
                 date_range = earliest.strftime("%Y/%m/%d")
             else:
-                date_range = f"{earliest.strftime('%Y/%m/%d')} - {latest.strftime('%Y/%m/%d')}"
+                date_range = (
+                    f"{earliest.strftime('%Y/%m/%d')} - {latest.strftime('%Y/%m/%d')}"
+                )
         else:
             date_range = "No Data"
-        
+
         lines.append(f"Glucose Readings for {date_range}")
-        
+
         for reading in readings_list:
             lines.append(self.format_text_entry(reading))
-        
+
         response.write("\n".join(lines))
         return response
 
     def format_text_entry(self, obj: GlucoseReading) -> str:
-        time_str = obj.occurred_at.strftime("%Y/%m/%d %I:%M %p").replace(" 0", " ").lower()
+        time_str = (
+            obj.occurred_at.strftime("%Y/%m/%d %I:%M %p").replace(" 0", " ").lower()
+        )
         return f"- {time_str}: {obj.value} {obj.unit}"
 
 
