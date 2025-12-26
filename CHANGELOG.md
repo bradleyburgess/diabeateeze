@@ -5,6 +5,23 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.7] - 2025-12-25
+
+### Added
+- Date sorting functionality for glucose readings, insulin doses, and meals tables
+- Sortable "Date & Time" column headers with visual indicators (↑/↓) showing current sort direction
+- Date filtering for meals and insulin doses matching existing glucose readings functionality
+- Export modal interface replacing previous dropdown design
+- Glucose-specific export options: Include units checkbox and date format selector
+- Export options isolated to glucose readings only (not displayed for other data types)
+
+### Changed
+- Export interface converted from dropdown to modal dialog for better UX
+- Pagination links now preserve sort order and date filter parameters
+- Page size controls maintain sort and filter state when changed
+- Export functionality respects current sorting parameters
+- JavaScript page size handler updated to preserve all query parameters
+
 ## [1.0.6] - 2025-12-24
 
 ### Added
