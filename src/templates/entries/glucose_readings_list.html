@@ -7,7 +7,7 @@
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h1><i class="bi bi-droplet-fill me-2"></i>Blood Glucose Readings</h1>
         <div class="d-flex gap-2">
-            {% include "entries/_export_button.html" %}
+            {% include "entries/_export_button.html" with show_glucose_export_options=True %}
             <a href="{% url 'entries:glucose_reading_create' %}" class="btn btn-primary">
                 <i class="bi bi-plus-circle"></i> Add Reading
             </a>

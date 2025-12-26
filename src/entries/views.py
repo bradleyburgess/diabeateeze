@@ -160,8 +160,16 @@ def glucose_readings_list(request):
 
     # Handle export if requested (before pagination)
     if export_format in ["csv", "excel", "text"]:
+        # Get export options
+        include_units = request.GET.get("include_units", "1") == "1"
+        date_format = request.GET.get("date_format", "full")
+
         exporter_class = get_exporter_for_model(GlucoseReading)
         exporter = exporter_class(readings, GlucoseReading)
+
+        # Pass export options to exporter
+        exporter.include_units = include_units
+        exporter.date_format = date_format
 
         if export_format == "csv":
             return exporter.to_csv()

@@ -1,25 +1,71 @@
-<!-- Export dropdown button -->
-<div class="btn-group" role="group">
-    <button type="button" class="btn btn-outline-secondary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
-        <i class="bi bi-download"></i> Export
-    </button>
-    <ul class="dropdown-menu">
-        <li>
-            <a class="dropdown-item" href="?export=csv{% for key, value in request.GET.items %}{% if key != 'export' and key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">
-                <i class="bi bi-filetype-csv"></i> Export to CSV
-            </a>
-        </li>
-        <li>
-            <a class="dropdown-item" href="?export=excel{% for key, value in request.GET.items %}{% if key != 'export' and key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">
-                <i class="bi bi-file-earmark-excel"></i> Export to Excel
-            </a>
-        </li>
-        <li>
-            <a class="dropdown-item" href="#" onclick="copyToClipboard('?export=text{% for key, value in request.GET.items %}{% if key != 'export' and key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}'); return false;">
-                <i class="bi bi-clipboard"></i> Copy as Text
-            </a>
-        </li>
-    </ul>
+<!-- Export button -->
+<button type="button" class="btn btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#exportModal">
+    <i class="bi bi-download"></i> Export
+</button>
+
+<!-- Export Modal -->
+<div class="modal fade" id="exportModal" tabindex="-1" aria-labelledby="exportModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exportModalLabel">
+                    <i class="bi bi-download"></i> Export Data
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                {% if show_glucose_export_options %}
+                <!-- Glucose Reading Export Options -->
+                <div class="mb-4 p-3 rounded">
+                    <h6 class="mb-3">Export Options</h6>
+                    <div class="mb-3">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="includeUnits" checked>
+                            <label class="form-check-label" for="includeUnits">
+                                Include units in readings
+                            </label>
+                        </div>
+                    </div>
+                    <div class="mb-0">
+                        <label for="dateFormat" class="form-label">Date Format</label>
+                        <select class="form-select" id="dateFormat">
+                            <option value="full" selected>Full date and time</option>
+                            <option value="time">Time only</option>
+                        </select>
+                    </div>
+                </div>
+                {% endif %}
+                
+                <p class="text-muted mb-3">Choose your preferred export format:</p>
+                <div class="d-grid gap-3">
+                    <button type="button" class="btn btn-outline-primary btn-lg text-start" onclick="exportData('csv')">
+                        <i class="bi bi-filetype-csv fs-4 me-3"></i>
+                        <span>
+                            <strong>Export to CSV</strong>
+                            <small class="d-block text-muted">Comma-separated values file</small>
+                        </span>
+                    </button>
+                    <button type="button" class="btn btn-outline-success btn-lg text-start" onclick="exportData('excel')">
+                        <i class="bi bi-file-earmark-excel fs-4 me-3"></i>
+                        <span>
+                            <strong>Export to Excel</strong>
+                            <small class="d-block text-muted">Microsoft Excel spreadsheet</small>
+                        </span>
+                    </button>
+                    <button type="button" class="btn btn-outline-info btn-lg text-start" onclick="exportData('text', true)">
+                        <i class="bi bi-clipboard fs-4 me-3"></i>
+                        <span>
+                            <strong>Copy as Text</strong>
+                            <small class="d-block text-muted">Copy to clipboard</small>
+                        </span>
+                    </button>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+            </div>
+        </div>
+    </div>
 </div>
 
 <!-- Toast notification for copy feedback -->
@@ -35,7 +81,39 @@
 </div>
 
 <script>
+function exportData(format, isClipboard = false) {
+    // Build query string with current filters
+    const url = new URL(window.location.href);
+    url.searchParams.set('export', format);
+    url.searchParams.delete('page'); // Remove page parameter for export
+    
+    // Add export options if checkboxes/selects exist
+    const includeUnitsCheckbox = document.getElementById('includeUnits');
+    const dateFormatSelect = document.getElementById('dateFormat');
+    
+    if (includeUnitsCheckbox) {
+        url.searchParams.set('include_units', includeUnitsCheckbox.checked ? '1' : '0');
+    }
+    if (dateFormatSelect) {
+        url.searchParams.set('date_format', dateFormatSelect.value);
+    }
+    
+    if (isClipboard) {
+        copyToClipboard(url.search);
+    } else {
+        // For file downloads, navigate to the URL
+        window.location.href = url.toString();
+    }
+}
+
 function copyToClipboard(queryString) {
+    // Close the modal
+    const modalElement = document.getElementById('exportModal');
+    const modal = bootstrap.Modal.getInstance(modalElement);
+    if (modal) {
+        modal.hide();
+    }
+    
     // Fetch the text export data
     fetch(window.location.pathname + queryString)
         .then(response => {

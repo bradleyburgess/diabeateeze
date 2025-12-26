@@ -106,17 +106,36 @@ class BaseExporter:
 class GlucoseReadingExporter(BaseExporter):
     """Exporter for GlucoseReading model."""
 
+    def __init__(self, queryset, model_class):
+        super().__init__(queryset, model_class)
+        self.include_units = True
+        self.date_format = "full"
+
     def get_headers(self) -> List[str]:
-        return ["Date", "Time", "Value", "Unit", "Notes"]
+        if self.date_format == "time":
+            return ["Time", "Value", "Unit" if self.include_units else "", "Notes"]
+        return ["Date", "Time", "Value", "Unit" if self.include_units else "", "Notes"]
 
     def get_row_data(self, obj: GlucoseReading) -> List[Any]:
-        return [
-            obj.occurred_at.strftime("%Y-%m-%d"),
-            obj.occurred_at.strftime("%H:%M:%S"),
-            float(obj.value),
-            obj.unit,
-            obj.notes,
-        ]
+        if self.date_format == "time":
+            row = [
+                obj.occurred_at.strftime("%I:%M %p").lstrip("0"),
+                float(obj.value),
+            ]
+        else:
+            row = [
+                obj.occurred_at.strftime("%Y-%m-%d"),
+                obj.occurred_at.strftime("%H:%M:%S"),
+                float(obj.value),
+            ]
+
+        if self.include_units:
+            row.append(obj.unit)
+        else:
+            row.append("")
+
+        row.append(obj.notes)
+        return row
 
     def to_text(self) -> HttpResponse:
         """Export glucose readings as plain text with bulleted list format."""
@@ -151,10 +170,17 @@ class GlucoseReadingExporter(BaseExporter):
         return response
 
     def format_text_entry(self, obj: GlucoseReading) -> str:
-        time_str = (
-            obj.occurred_at.strftime("%Y/%m/%d %I:%M %p").replace(" 0", " ").lower()
-        )
-        return f"- {time_str}: {obj.value} {obj.unit}"
+        if self.date_format == "time":
+            time_str = obj.occurred_at.strftime("%I:%M %p").lstrip("0").lower()
+        else:
+            time_str = (
+                obj.occurred_at.strftime("%Y/%m/%d %I:%M %p").replace(" 0", " ").lower()
+            )
+
+        if self.include_units:
+            return f"- {time_str}: {obj.value} {obj.unit}"
+        else:
+            return f"- {time_str}: {obj.value}"
 
 
 class InsulinDoseExporter(BaseExporter):
