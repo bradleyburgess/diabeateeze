@@ -427,6 +427,7 @@ def insulin_dose_create(request):
         form = InsulinDoseForm()
 
     # Get insulin schedules and correction scales for reference
+    last_reading = GlucoseReading.objects.order_by("-occurred_at").first()
     insulin_schedules = InsulinSchedule.objects.select_related("insulin_type").all()
     correction_scales = CorrectionScale.objects.all()
 
@@ -436,6 +437,7 @@ def insulin_dose_create(request):
         {
             "form": form,
             "title": "Add Insulin Dose",
+            "last_reading": last_reading,
             "insulin_schedules": insulin_schedules,
             "correction_scales": correction_scales,
         },

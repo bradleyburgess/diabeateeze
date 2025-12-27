@@ -1,203 +1,231 @@
-{% extends "app_layout.html" %}
+{% extends 'app_layout.html' %}
 
-{% block title %}{{ title }}{% endblock %}
+{% block title %}
+  {{ title }}
+{% endblock %}
 
 {% block content %}
-<div class="container mt-4">
+  <div class="container mt-4">
     <div class="row">
-        <div class="col-lg-8 mx-auto">
-            <div class="card">
+      <div class="col-lg-8 mx-auto">
+        <div class="card">
+          <div class="card-header">
+            <h2 class="mb-0">{{ title }}</h2>
+          </div>
+          <div class="card-body">
+            {% if dose %}
+              <div class="alert alert-info mb-3" role="alert">
+                <small>
+                  <strong>Created:</strong> {{ dose.created_at|date:'N j, Y, g:i A' }}<br />
+                  <strong>Last Modified:</strong> {{ dose.updated_at|date:'N j, Y, g:i A' }}
+                </small>
+              </div>
+            {% endif %}
+            <form method="post" novalidate>
+              {% csrf_token %}
+
+              {% if form.non_field_errors %}
+                <div class="alert alert-danger" role="alert">{{ form.non_field_errors }}</div>
+              {% endif %}
+
+              <div class="mb-3">
+                <label for="{{ form.occurred_at.id_for_label }}" class="form-label">
+                  {{ form.occurred_at.label }}
+                  {% if form.occurred_at.field.required %}
+                    <span class="text-danger">*</span>
+                  {% endif %}
+                </label>
+                {{ form.occurred_at }}
+                {% if form.occurred_at.errors %}
+                  <div class="text-danger small mt-1">{{ form.occurred_at.errors }}</div>
+                {% endif %}
+              </div>
+
+              <div class="mb-3">
+                <label for="{{ form.base_units.id_for_label }}" class="form-label">
+                  {{ form.base_units.label }}
+                  {% if form.base_units.field.required %}
+                    <span class="text-danger">*</span>
+                  {% endif %}
+                </label>
+                {{ form.base_units }}
+                {% if form.base_units.errors %}
+                  <div class="text-danger small mt-1">{{ form.base_units.errors }}</div>
+                {% endif %}
+                <div class="form-text">Basal or scheduled insulin dose</div>
+              </div>
+
+              <div class="mb-3">
+                <label for="{{ form.correction_units.id_for_label }}" class="form-label">
+                  {{ form.correction_units.label }}
+                  {% if form.correction_units.field.required %}
+                    <span class="text-danger">*</span>
+                  {% endif %}
+                </label>
+                {{ form.correction_units }}
+                {% if form.correction_units.errors %}
+                  <div class="text-danger small mt-1">{{ form.correction_units.errors }}</div>
+                {% endif %}
+                <div class="form-text">Additional correction dose (0 if none)</div>
+              </div>
+
+              <div class="mb-3">
+                <label for="{{ form.insulin_type.id_for_label }}" class="form-label">
+                  {{ form.insulin_type.label }}
+                  {% if form.insulin_type.field.required %}
+                    <span class="text-danger">*</span>
+                  {% endif %}
+                </label>
+                {{ form.insulin_type }}
+                {% if form.insulin_type.errors %}
+                  <div class="text-danger small mt-1">{{ form.insulin_type.errors }}</div>
+                {% endif %}
+              </div>
+
+              <div class="mb-3">
+                <label for="{{ form.notes.id_for_label }}" class="form-label">
+                  {{ form.notes.label }}
+                  {% if form.notes.field.required %}
+                    <span class="text-danger">*</span>
+                  {% endif %}
+                </label>
+                {{ form.notes }}
+                {% if form.notes.errors %}
+                  <div class="text-danger small mt-1">{{ form.notes.errors }}</div>
+                {% endif %}
+              </div>
+
+              <div class="d-flex gap-2">
+                <button type="submit" class="btn btn-primary">
+                  <i class="bi bi-save"></i> {% if dose %}
+                    Update
+                  {% else %}
+                    Save
+                  {% endif %}Dose
+                </button>
+                <a href="{% url 'entries:insulin_doses_list' %}" class="btn btn-secondary"><i class="bi bi-x-circle"></i> Cancel</a>
+              </div>
+            </form>
+          </div>
+        </div>
+
+        {% if not dose %}
+          <!-- Reference Tables (only shown when adding new dose) -->
+
+          <div class="mt-5">
+            <div class="alert alert-secondary">
+              <div class="d-flex justify-content-between align-items-center">
+                <p class="h5 mb-0">
+                  <i class="bi bi-clock"></i> Last Reading:
+                  <strong>{{ last_reading.value }} {{ last_reading.unit }}</strong>
+                </p>
+                <p class="mb-0">
+                  <small>{{ last_reading.occurred_at|timesince }} ago</small>
+                </p>
+              </div>
+            </div>
+          </div>
+          <div class="row g-4 mt-3">
+            <!-- Insulin Schedule Table -->
+            <div class="col-lg-8">
+              <div class="card">
                 <div class="card-header">
-                    <h2 class="mb-0">{{ title }}</h2>
+                  <h5 class="mb-0"><i class="bi bi-clock-fill text-primary"></i> Insulin Schedule</h5>
                 </div>
                 <div class="card-body">
-                    {% if dose %}
-                    <div class="alert alert-info mb-3" role="alert">
-                        <small>
-                            <strong>Created:</strong> {{ dose.created_at|date:"N j, Y, g:i A" }}<br>
-                            <strong>Last Modified:</strong> {{ dose.updated_at|date:"N j, Y, g:i A" }}
-                        </small>
+                  {% if insulin_schedules %}
+                    <div class="table-responsive">
+                      <table class="table table-sm table-hover mb-0">
+                        <thead>
+                          <tr>
+                            <th>Time</th>
+                            <th>Label</th>
+                            <th>Type</th>
+                            <th class="text-end">Units</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {% for schedule in insulin_schedules %}
+                            <tr onclick="updateBaseUnits({{ schedule.units }});" style="cursor: pointer;">
+                              <td>
+                                <strong>{{ schedule.time|time:'H:i' }}</strong>
+                              </td>
+                              <td>{{ schedule.label }}</td>
+                              <td>
+                                <span class="badge bg-success">{{ schedule.insulin_type.name }}</span>
+                              </td>
+                              <td class="text-end">{{ schedule.units }} u</td>
+                            </tr>
+                          {% endfor %}
+                        </tbody>
+                      </table>
                     </div>
-                    {% endif %}
-                    <form method="post" novalidate>
-                        {% csrf_token %}
-                        
-                        {% if form.non_field_errors %}
-                        <div class="alert alert-danger" role="alert">
-                            {{ form.non_field_errors }}
-                        </div>
-                        {% endif %}
-
-                        <div class="mb-3">
-                            <label for="{{ form.occurred_at.id_for_label }}" class="form-label">
-                                {{ form.occurred_at.label }}
-                                {% if form.occurred_at.field.required %}<span class="text-danger">*</span>{% endif %}
-                            </label>
-                            {{ form.occurred_at }}
-                            {% if form.occurred_at.errors %}
-                            <div class="text-danger small mt-1">
-                                {{ form.occurred_at.errors }}
-                            </div>
-                            {% endif %}
-                        </div>
-
-                        <div class="mb-3">
-                            <label for="{{ form.base_units.id_for_label }}" class="form-label">
-                                {{ form.base_units.label }}
-                                {% if form.base_units.field.required %}<span class="text-danger">*</span>{% endif %}
-                            </label>
-                            {{ form.base_units }}
-                            {% if form.base_units.errors %}
-                            <div class="text-danger small mt-1">
-                                {{ form.base_units.errors }}
-                            </div>
-                            {% endif %}
-                            <div class="form-text">Basal or scheduled insulin dose</div>
-                        </div>
-
-                        <div class="mb-3">
-                            <label for="{{ form.correction_units.id_for_label }}" class="form-label">
-                                {{ form.correction_units.label }}
-                                {% if form.correction_units.field.required %}<span class="text-danger">*</span>{% endif %}
-                            </label>
-                            {{ form.correction_units }}
-                            {% if form.correction_units.errors %}
-                            <div class="text-danger small mt-1">
-                                {{ form.correction_units.errors }}
-                            </div>
-                            {% endif %}
-                            <div class="form-text">Additional correction dose (0 if none)</div>
-                        </div>
-
-                        <div class="mb-3">
-                            <label for="{{ form.insulin_type.id_for_label }}" class="form-label">
-                                {{ form.insulin_type.label }}
-                                {% if form.insulin_type.field.required %}<span class="text-danger">*</span>{% endif %}
-                            </label>
-                            {{ form.insulin_type }}
-                            {% if form.insulin_type.errors %}
-                            <div class="text-danger small mt-1">
-                                {{ form.insulin_type.errors }}
-                            </div>
-                            {% endif %}
-                        </div>
-
-                        <div class="mb-3">
-                            <label for="{{ form.notes.id_for_label }}" class="form-label">
-                                {{ form.notes.label }}
-                                {% if form.notes.field.required %}<span class="text-danger">*</span>{% endif %}
-                            </label>
-                            {{ form.notes }}
-                            {% if form.notes.errors %}
-                            <div class="text-danger small mt-1">
-                                {{ form.notes.errors }}
-                            </div>
-                            {% endif %}
-                        </div>
-
-                        <div class="d-flex gap-2">
-                            <button type="submit" class="btn btn-primary">
-                                <i class="bi bi-save"></i> {% if dose %}Update{% else %}Save{% endif %} Dose
-                            </button>
-                            <a href="{% url 'entries:insulin_doses_list' %}" class="btn btn-secondary">
-                                <i class="bi bi-x-circle"></i> Cancel
-                            </a>
-                        </div>
-                    </form>
+                  {% else %}
+                    <div class="text-center text-muted py-3">
+                      <i class="bi bi-calendar-x" style="font-size: 1.5rem;"></i>
+                      <p class="mb-0 small">No scheduled doses</p>
+                    </div>
+                  {% endif %}
                 </div>
+              </div>
             </div>
 
-            {% if not dose %}
-            <!-- Reference Tables (only shown when adding new dose) -->
-            <div class="row g-4 mt-3">
-                <!-- Insulin Schedule Table -->
-                <div class="col-lg-8">
-                    <div class="card">
-                        <div class="card-header">
-                            <h5 class="mb-0">
-                                <i class="bi bi-clock-fill text-primary"></i> Insulin Schedule
-                            </h5>
-                        </div>
-                        <div class="card-body">
-                            {% if insulin_schedules %}
-                                <div class="table-responsive">
-                                    <table class="table table-sm table-hover mb-0">
-                                        <thead>
-                                            <tr>
-                                                <th>Time</th>
-                                                <th>Label</th>
-                                                <th>Type</th>
-                                                <th class="text-end">Units</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            {% for schedule in insulin_schedules %}
-                                                <tr>
-                                                    <td><strong>{{ schedule.time|time:"H:i" }}</strong></td>
-                                                    <td>{{ schedule.label }}</td>
-                                                    <td><span class="badge bg-success">{{ schedule.insulin_type.name }}</span></td>
-                                                    <td class="text-end">{{ schedule.units }} u</td>
-                                                </tr>
-                                            {% endfor %}
-                                        </tbody>
-                                    </table>
-                                </div>
-                            {% else %}
-                                <div class="text-center text-muted py-3">
-                                    <i class="bi bi-calendar-x" style="font-size: 1.5rem;"></i>
-                                    <p class="mb-0 small">No scheduled doses</p>
-                                </div>
-                            {% endif %}
-                        </div>
-                    </div>
+            <!-- Correction Scale Table -->
+            <div class="col-lg-4">
+              <div class="card">
+                <div class="card-header">
+                  <h5 class="mb-0"><i class="bi bi-calculator-fill text-info"></i> Correction Scale</h5>
                 </div>
-
-                <!-- Correction Scale Table -->
-                <div class="col-lg-4">
-                    <div class="card">
-                        <div class="card-header">
-                            <h5 class="mb-0">
-                                <i class="bi bi-calculator-fill text-info"></i> Correction Scale
-                            </h5>
-                        </div>
-                        <div class="card-body">
-                            {% if correction_scales %}
-                                <div class="table-responsive">
-                                    <table class="table table-sm table-hover mb-0">
-                                        <thead>
-                                            <tr>
-                                                <th>Blood Glucose</th>
-                                                <th class="text-end">Add Units</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            {% for scale in correction_scales %}
-                                                <tr>
-                                                    <td>Above <strong>{{ scale.greater_than }}</strong> mmol/L</td>
-                                                    <td class="text-end"><span class="badge bg-info">+{{ scale.units_to_add }} u</span></td>
-                                                </tr>
-                                            {% endfor %}
-                                        </tbody>
-                                    </table>
-                                </div>
-                            {% else %}
-                                <div class="text-center text-muted py-3">
-                                    <i class="bi bi-calculator-x" style="font-size: 1.5rem;"></i>
-                                    <p class="mb-0 small">No correction scale defined</p>
-                                </div>
-                            {% endif %}
-                        </div>
+                <div class="card-body">
+                  {% if correction_scales %}
+                    <div class="table-responsive">
+                      <table class="table table-sm table-hover mb-0">
+                        <thead>
+                          <tr>
+                            <th>Glucose</th>
+                            <th class="text-end">Add</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {% for scale in correction_scales %}
+                            <tr onclick="updateCorrectionUnits({{ scale.units_to_add }});" style="cursor: pointer;">
+                              <td>
+                                &gt; <strong>{{ scale.greater_than }}</strong> mmol/L
+                              </td>
+                              <td class="text-end">
+                                <span class="badge bg-info">+{{ scale.units_to_add }} u</span>
+                              </td>
+                            </tr>
+                          {% endfor %}
+                        </tbody>
+                      </table>
                     </div>
+                  {% else %}
+                    <div class="text-center text-muted py-3">
+                      <i class="bi bi-calculator-x" style="font-size: 1.5rem;"></i>
+                      <p class="mb-0 small">No correction scale defined</p>
+                    </div>
+                  {% endif %}
                 </div>
+              </div>
             </div>
-            {% endif %}
-        </div>
+          </div>
+        {% endif %}
+      </div>
     </div>
-</div>
+  </div>
 {% endblock %}
 
 {% block extra_js %}
-<script>
+  <script>
+    function updateBaseUnits(value) {
+        document.getElementById('{{ form.base_units.id_for_label }}').value = value;
+    }
+
+    function updateCorrectionUnits(value) {
+        document.getElementById('{{ form.correction_units.id_for_label }}').value = value;
+    }
+
     // Set current local datetime as default for new entries
     document.addEventListener('DOMContentLoaded', function() {
         {% if not dose %}
