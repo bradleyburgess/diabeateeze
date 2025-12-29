@@ -147,6 +147,61 @@
             <i class="bi bi-info-circle me-2"></i>No glucose readings found.
         </div>
     {% endif %}
+
+    <!-- Charts Section -->
+    {% if chart_data %}
+        <div class="card mt-4">
+            <div class="card-body">
+                <h5 class="card-title mb-3">Glucose Trends</h5>
+                
+                <!-- Tab Navigation -->
+                <ul class="nav nav-tabs" id="chartTabs" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link active" id="timeline-tab" data-bs-toggle="tab" 
+                                data-bs-target="#timeline-chart" type="button" role="tab" 
+                                aria-controls="timeline-chart" aria-selected="true">
+                            Timeline View
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="overlay-tab" data-bs-toggle="tab" 
+                                data-bs-target="#overlay-chart" type="button" role="tab" 
+                                aria-controls="overlay-chart" aria-selected="false">
+                            24-Hour Overlay
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="average-tab" data-bs-toggle="tab" 
+                                data-bs-target="#average-chart" type="button" role="tab" 
+                                aria-controls="average-chart" aria-selected="false">
+                            Daily Averages
+                        </button>
+                    </li>
+                </ul>
+                
+                <!-- Tab Content -->
+                <div class="tab-content mt-3" id="chartTabContent">
+                    <!-- Timeline Chart -->
+                    <div class="tab-pane fade show active" id="timeline-chart" role="tabpanel" 
+                         aria-labelledby="timeline-tab">
+                        <canvas id="timelineCanvas" style="max-height: 400px;"></canvas>
+                    </div>
+                    
+                    <!-- 24-Hour Overlay Chart -->
+                    <div class="tab-pane fade" id="overlay-chart" role="tabpanel" 
+                         aria-labelledby="overlay-tab">
+                        <canvas id="overlayCanvas" style="max-height: 400px;"></canvas>
+                    </div>
+                    
+                    <!-- Daily Averages Chart -->
+                    <div class="tab-pane fade" id="average-chart" role="tabpanel" 
+                         aria-labelledby="average-tab">
+                        <canvas id="averageCanvas" style="max-height: 400px;"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% endif %}
 </div>
 
 <script>
@@ -166,5 +221,228 @@
         });
         window.location.href = url.toString();
     });
+
+    // Chart.js configuration
+    {% if chart_data %}
+    document.addEventListener('DOMContentLoaded', function() {
+        // Timeline Chart
+        const timelineCtx = document.getElementById('timelineCanvas').getContext('2d');
+        const chartData = JSON.parse('{{ chart_data|escapejs }}');
+        
+        const timelineChart = new Chart(timelineCtx, {
+            type: 'line',
+            data: {
+                labels: chartData.map(d => new Date(d.timestamp)),
+                datasets: [{
+                    label: 'Blood Glucose',
+                    data: chartData.map(d => d.value),
+                    borderColor: 'rgb(75, 192, 192)',
+                    backgroundColor: 'rgba(75, 192, 192, 0.1)',
+                    tension: 0.1,
+                    fill: true
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                interaction: {
+                    mode: 'index',
+                    intersect: false,
+                },
+                plugins: {
+                    legend: {
+                        display: true,
+                        position: 'top',
+                    },
+                    tooltip: {
+                        callbacks: {
+                            title: function(context) {
+                                const date = new Date(context[0].label);
+                                return date.toLocaleString();
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    x: {
+                        type: 'time',
+                        time: {
+                            displayFormats: {
+                                hour: 'MMM d, HH:mm',
+                                day: 'MMM d',
+                            },
+                            tooltipFormat: 'MMM d, yyyy HH:mm'
+                        },
+                        title: {
+                            display: true,
+                            text: 'Date & Time'
+                        }
+                    },
+                    y: {
+                        title: {
+                            display: true,
+                            text: 'Blood Glucose'
+                        },
+                        beginAtZero: false
+                    }
+                }
+            }
+        });
+
+        // 24-Hour Overlay Chart
+        const overlayCtx = document.getElementById('overlayCanvas').getContext('2d');
+        const dailyData = JSON.parse('{{ daily_data|escapejs }}');
+        
+        // Generate colors for each day
+        const colors = [
+            'rgb(255, 99, 132)',
+            'rgb(54, 162, 235)',
+            'rgb(255, 206, 86)',
+            'rgb(75, 192, 192)',
+            'rgb(153, 102, 255)',
+            'rgb(255, 159, 64)',
+            'rgb(199, 199, 199)',
+            'rgb(83, 102, 255)',
+            'rgb(255, 99, 255)',
+            'rgb(99, 255, 132)'
+        ];
+        
+        const datasets = Object.keys(dailyData).map((date, index) => {
+            const readings = dailyData[date];
+            const color = colors[index % colors.length];
+            
+            return {
+                label: date,
+                data: readings.map(r => ({
+                    x: r.hour_decimal,
+                    y: r.value
+                })),
+                borderColor: color,
+                backgroundColor: color.replace('rgb', 'rgba').replace(')', ', 0.1)'),
+                tension: 0.1,
+                fill: false
+            };
+        });
+        
+        const overlayChart = new Chart(overlayCtx, {
+            type: 'line',
+            data: {
+                datasets: datasets
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                interaction: {
+                    mode: 'nearest',
+                    intersect: false,
+                },
+                plugins: {
+                    legend: {
+                        display: true,
+                        position: 'top',
+                    },
+                    tooltip: {
+                        callbacks: {
+                            title: function(context) {
+                                const hours = Math.floor(context[0].parsed.x);
+                                const minutes = Math.round((context[0].parsed.x - hours) * 60);
+                                return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    x: {
+                        type: 'linear',
+                        min: 0,
+                        max: 24,
+                        ticks: {
+                            stepSize: 2,
+                            callback: function(value) {
+                                return value.toString().padStart(2, '0') + ':00';
+                            }
+                        },
+                        title: {
+                            display: true,
+                            text: 'Time of Day (24-hour)'
+                        }
+                    },
+                    y: {
+                        title: {
+                            display: true,
+                            text: 'Blood Glucose'
+                        },
+                        beginAtZero: false
+                    }
+                }
+            }
+        });
+        
+        // Daily Averages Chart
+        const averageCtx = document.getElementById('averageCanvas').getContext('2d');
+        const dailyAvgData = JSON.parse('{{ daily_avg_data|escapejs }}');
+        
+        const averageChart = new Chart(averageCtx, {
+            type: 'line',
+            data: {
+                labels: dailyAvgData.map(d => d.date),
+                datasets: [{
+                    label: 'Daily Average',
+                    data: dailyAvgData.map(d => d.average),
+                    borderColor: 'rgb(153, 102, 255)',
+                    backgroundColor: 'rgba(153, 102, 255, 0.1)',
+                    tension: 0.1,
+                    fill: true,
+                    pointRadius: 5,
+                    pointHoverRadius: 7
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                interaction: {
+                    mode: 'index',
+                    intersect: false,
+                },
+                plugins: {
+                    legend: {
+                        display: true,
+                        position: 'top',
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return 'Average: ' + context.parsed.y.toFixed(1);
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    x: {
+                        type: 'time',
+                        time: {
+                            unit: 'day',
+                            displayFormats: {
+                                day: 'MMM d'
+                            },
+                            tooltipFormat: 'MMM d, yyyy'
+                        },
+                        title: {
+                            display: true,
+                            text: 'Date'
+                        }
+                    },
+                    y: {
+                        title: {
+                            display: true,
+                            text: 'Average Blood Glucose'
+                        },
+                        beginAtZero: false
+                    }
+                }
+            }
+        });
+    });
+    {% endif %}
 </script>
 {% endblock %}

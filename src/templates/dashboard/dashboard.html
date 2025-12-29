@@ -7,7 +7,7 @@
     <h1 class="mb-4">Dashboard</h1>
     
     <!-- Quick Add Section -->
-    <section class="mb-5">
+    <section class="mb-5 py-5">
         <h2 class="mb-3">Quick Add</h2>
         <div class="row g-4 g-lg-5">
             <!-- Blood Glucose Reading -->
@@ -58,7 +58,7 @@
     </section>
 
     <!-- Insulin Schedule Section -->
-    <section class="mb-5">
+    <section class="mb-5 py-5">
         <div class="d-flex justify-content-between align-items-center mb-3">
             <h2 class="mb-0">Insulin Schedule</h2>
         </div>
@@ -100,7 +100,7 @@
                                 </table>
                             </div>
                         {% else %}
-                            <div class="text-center text-muted py-4">
+                            <div class="text-center text-muted py-5">
                                 <i class="bi bi-calendar-x" style="font-size: 2rem;"></i>
                                 <p class="mb-2">No scheduled doses yet</p>
                                 <a href="{% url 'entries:insulin_schedule_create' %}" class="btn btn-sm btn-primary">
@@ -144,7 +144,7 @@
                                 </table>
                             </div>
                         {% else %}
-                            <div class="text-center text-muted py-4">
+                            <div class="text-center text-muted py-5">
                                 <i class="bi bi-calculator-x" style="font-size: 2rem;"></i>
                                 <p class="mb-2">No correction scale defined</p>
                                 <a href="{% url 'entries:correction_scale_create' %}" class="btn btn-sm btn-primary">
@@ -158,8 +158,77 @@
         </div>
     </section>
 
+    <!-- Blood Glucose History Section -->
+    <section class="mb-6 py-5">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h2 class="mb-0">Blood Glucose History</h2>
+            <a href="{% url 'entries:glucose_readings_list' %}" class="btn btn-outline-primary btn-sm">
+                <i class="bi bi-list-ul"></i> View All Readings
+            </a>
+        </div>
+
+        {% if has_glucose_data %}
+            <!-- Statistics Cards -->
+            <div class="row g-3 mb-4">
+                <div class="col-md-4">
+                    <div class="card h-100">
+                        <div class="card-body text-center">
+                            <div class="text-muted mb-2">
+                                <i class="bi bi-arrow-up-circle"></i> Highest (Past Week)
+                            </div>
+                            {% if glucose_stats.highest %}
+                                <h3 class="mb-0 {% if glucose_stats.highest > 15 %}text-danger{% elif glucose_stats.highest >= 10 %}text-muted{% else %}text-success{% endif %}">{{ glucose_stats.highest|floatformat:0 }}</h3>
+                                <small class="text-muted">mmol/L</small>
+                            {% else %}
+                                <p class="text-muted mb-0">No data</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card h-100">
+                        <div class="card-body text-center">
+                            <div class="text-muted mb-2">
+                                <i class="bi bi-arrow-down-circle"></i> Lowest (Past Week)
+                            </div>
+                            {% if glucose_stats.lowest %}
+                                <h3 class="mb-0 {% if glucose_stats.lowest > 15 %}text-danger{% elif glucose_stats.lowest >= 10 %}text-muted{% else %}text-success{% endif %}">{{ glucose_stats.lowest|floatformat:0 }}</h3>
+                                <small class="text-muted">mmol/L</small>
+                            {% else %}
+                                <p class="text-muted mb-0">No data</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card h-100">
+                        <div class="card-body text-center">
+                            <div class="text-muted mb-2">
+                                <i class="bi bi-bar-chart"></i> Median (Past Week)
+                            </div>
+                            {% if glucose_stats.median %}
+                                <h3 class="mb-0 {% if glucose_stats.median > 15 %}text-danger{% elif glucose_stats.median >= 10 %}text-muted{% else %}text-success{% endif %}">{{ glucose_stats.median|floatformat:0 }}</h3>
+                                <small class="text-muted">mmol/L</small>
+                            {% else %}
+                                <p class="text-muted mb-0">No data</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Daily Averages Chart -->
+                    <h5 class="card-title mb-3 mt-3">Daily Averages (Past 2 Weeks)</h5>
+                    <canvas id="dashboardGlucoseChart" style="max-height: 300px;"></canvas>
+        {% else %}
+            <div class="alert alert-info">
+                <i class="bi bi-info-circle me-2"></i>No glucose readings yet. Start tracking your blood glucose to see statistics and trends here!
+            </div>
+        {% endif %}
+    </section>
+
     <!-- Recent Activity Section -->
-    <section class="mb-5">
+    <section class="mb-6 py-5">
         <div class="d-flex justify-content-between align-items-center mb-3">
             <h2 class="mb-0">Recent Activity</h2>
             <a href="{% url 'entries:activity' %}" class="btn btn-outline-primary btn-sm">
@@ -240,7 +309,7 @@
     </section>
 
     <!-- Manage Logs Section -->
-    <section class="mb-5">
+    <section class="mb-6 py-5">
         <h2 class="mb-3">Manage Logs</h2>
         <div class="row g-3">
             <!-- Blood Glucose Readings -->
@@ -296,4 +365,89 @@
         </div>
     </section>
 </div>
+
+<script>
+    {% if has_glucose_data %}
+    document.addEventListener('DOMContentLoaded', function() {
+        const ctx = document.getElementById('dashboardGlucoseChart').getContext('2d');
+        const dailyAvgData = JSON.parse('{{ daily_avg_data|escapejs }}');
+        
+        const chart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: dailyAvgData.map(d => d.date),
+                datasets: [{
+                    label: 'Daily Average',
+                    data: dailyAvgData.map(d => d.average),
+                    borderColor: 'rgb(75, 192, 192)',
+                    backgroundColor: 'rgba(75, 192, 192, 0.1)',
+                    tension: 0.2,
+                    fill: true,
+                    pointRadius: 4,
+                    pointHoverRadius: 6,
+                    pointBackgroundColor: 'rgb(75, 192, 192)',
+                    pointBorderColor: '#fff',
+                    pointBorderWidth: 2
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                interaction: {
+                    mode: 'index',
+                    intersect: false,
+                },
+                plugins: {
+                    legend: {
+                        display: false
+                    },
+                    tooltip: {
+                        callbacks: {
+                            title: function(context) {
+                                const date = new Date(context[0].label);
+                                return date.toLocaleDateString('en-US', { 
+                                    weekday: 'short', 
+                                    month: 'short', 
+                                    day: 'numeric' 
+                                });
+                            },
+                            label: function(context) {
+                                return 'Average: ' + context.parsed.y.toFixed(1) + ' mmol/L';
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    x: {
+                        type: 'time',
+                        time: {
+                            unit: 'day',
+                            displayFormats: {
+                                day: 'MMM d'
+                            }
+                        },
+                        title: {
+                            display: true,
+                            text: 'Date'
+                        },
+                        grid: {
+                            display: false
+                        }
+                    },
+                    y: {
+                        title: {
+                            display: true,
+                            text: 'Blood Glucose (mmol/L)'
+                        },
+                        beginAtZero: false,
+                        grid: {
+                            color: 'rgba(0, 0, 0, 0.05)'
+                        }
+                    }
+                }
+            }
+        });
+    });
+    {% endif %}
+</script>
 {% endblock %}
