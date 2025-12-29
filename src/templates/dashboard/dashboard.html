@@ -1,372 +1,398 @@
 {% extends 'app_layout.html' %}
 
-{% block head_title %}Dashboard{% endblock %}
+{% block head_title %}
+  Dashboard
+{% endblock %}
 
 {% block content %}
-<div class="container mt-4">
+  <div class="container mt-4">
     <h1 class="mb-4">Dashboard</h1>
-    
+
     <!-- Quick Add Section -->
     <section class="mb-5 py-5">
-        <h2 class="mb-3">Quick Add</h2>
-        <div class="row g-4 g-lg-5">
-            <!-- Blood Glucose Reading -->
-            <div class="col-md-4">
-                <a href="{% url 'entries:glucose_reading_create' %}" class="text-decoration-none">
-                    <div class="card h-100 text-center hover-shadow">
-                        <div class="card-body d-flex flex-column justify-content-center p-4">
-                            <div class="mb-3">
-                                <i class="bi bi-plus-circle-fill text-primary" style="font-size: 3rem;"></i>
-                            </div>
-                            <h5 class="card-title mb-0">Blood Glucose</h5>
-                            <p class="text-muted small mt-1">Add reading</p>
-                        </div>
-                    </div>
-                </a>
+      <h2 class="mb-3">Quick Add</h2>
+      <div class="row g-4 g-lg-5">
+        <!-- Blood Glucose Reading -->
+        <div class="col-md-4">
+          <a href="{% url 'entries:glucose_reading_create' %}" class="text-decoration-none">
+            <div class="card h-100 text-center hover-shadow">
+              <div class="card-body d-flex flex-column justify-content-center p-4">
+                <div class="mb-3">
+                  <i class="bi bi-plus-circle-fill text-primary" style="font-size: 3rem;"></i>
+                </div>
+                <h5 class="card-title mb-0">Blood Glucose</h5>
+                <p class="text-muted small mt-1">Add reading</p>
+              </div>
             </div>
-
-            <!-- Insulin Dose -->
-            <div class="col-md-4">
-                <a href="{% url 'entries:insulin_dose_create' %}" class="text-decoration-none">
-                    <div class="card h-100 text-center hover-shadow">
-                        <div class="card-body d-flex flex-column justify-content-center p-4">
-                            <div class="mb-3">
-                                <i class="bi bi-plus-circle-fill text-success" style="font-size: 3rem;"></i>
-                            </div>
-                            <h5 class="card-title mb-0">Insulin Dose</h5>
-                            <p class="text-muted small mt-1">Log dose</p>
-                        </div>
-                    </div>
-                </a>
-            </div>
-
-            <!-- Meal -->
-            <div class="col-md-4">
-                <a href="{% url 'entries:meal_create' %}" class="text-decoration-none">
-                    <div class="card h-100 text-center hover-shadow">
-                        <div class="card-body d-flex flex-column justify-content-center p-4">
-                            <div class="mb-3">
-                                <i class="bi bi-plus-circle-fill text-warning" style="font-size: 3rem;"></i>
-                            </div>
-                            <h5 class="card-title mb-0">Meal</h5>
-                            <p class="text-muted small mt-1">Record meal</p>
-                        </div>
-                    </div>
-                </a>
-            </div>
+          </a>
         </div>
+
+        <!-- Insulin Dose -->
+        <div class="col-md-4">
+          <a href="{% url 'entries:insulin_dose_create' %}" class="text-decoration-none">
+            <div class="card h-100 text-center hover-shadow">
+              <div class="card-body d-flex flex-column justify-content-center p-4">
+                <div class="mb-3">
+                  <i class="bi bi-plus-circle-fill text-success" style="font-size: 3rem;"></i>
+                </div>
+                <h5 class="card-title mb-0">Insulin Dose</h5>
+                <p class="text-muted small mt-1">Log dose</p>
+              </div>
+            </div>
+          </a>
+        </div>
+
+        <!-- Meal -->
+        <div class="col-md-4">
+          <a href="{% url 'entries:meal_create' %}" class="text-decoration-none">
+            <div class="card h-100 text-center hover-shadow">
+              <div class="card-body d-flex flex-column justify-content-center p-4">
+                <div class="mb-3">
+                  <i class="bi bi-plus-circle-fill text-warning" style="font-size: 3rem;"></i>
+                </div>
+                <h5 class="card-title mb-0">Meal</h5>
+                <p class="text-muted small mt-1">Record meal</p>
+              </div>
+            </div>
+          </a>
+        </div>
+      </div>
     </section>
 
     <!-- Insulin Schedule Section -->
     <section class="mb-5 py-5">
-        <div class="d-flex justify-content-between align-items-center mb-3">
-            <h2 class="mb-0">Insulin Schedule</h2>
-        </div>
-        
-        <div class="row g-4">
-            <!-- Insulin Schedule Table -->
-            <div class="col-lg-8">
-                <div class="card">
-                    <div class="card-header d-flex justify-content-between align-items-center">
-                        <h5 class="mb-0">
-                            <i class="bi bi-clock-fill text-primary"></i> Schedule
-                        </h5>
-                        <a href="{% url 'entries:insulin_schedules_list' %}" class="btn btn-sm btn-outline-primary">
-                            <i class="bi bi-gear"></i> Manage
-                        </a>
-                    </div>
-                    <div class="card-body">
-                        {% if insulin_schedules %}
-                            <div class="table-responsive">
-                                <table class="table table-hover mb-0">
-                                    <thead>
-                                        <tr>
-                                            <th>Time</th>
-                                            <th>Label</th>
-                                            <th>Type</th>
-                                            <th class="text-end">Units</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {% for schedule in insulin_schedules %}
-                                            <tr>
-                                                <td><strong>{{ schedule.time|time:"H:i" }}</strong></td>
-                                                <td>{{ schedule.label }}</td>
-                                                <td><span class="badge bg-success">{{ schedule.insulin_type.name }}</span></td>
-                                                <td class="text-end">{{ schedule.units }} u</td>
-                                            </tr>
-                                        {% endfor %}
-                                    </tbody>
-                                </table>
-                            </div>
-                        {% else %}
-                            <div class="text-center text-muted py-5">
-                                <i class="bi bi-calendar-x" style="font-size: 2rem;"></i>
-                                <p class="mb-2">No scheduled doses yet</p>
-                                <a href="{% url 'entries:insulin_schedule_create' %}" class="btn btn-sm btn-primary">
-                                    <i class="bi bi-plus-circle"></i> Add Schedule
-                                </a>
-                            </div>
-                        {% endif %}
-                    </div>
-                </div>
-            </div>
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2 class="mb-0">Insulin Schedule</h2>
+      </div>
 
-            <!-- Correction Scale Table -->
-            <div class="col-lg-4">
-                <div class="card">
-                    <div class="card-header d-flex justify-content-between align-items-center">
-                        <h5 class="mb-0">
-                            <i class="bi bi-calculator-fill text-info"></i> Correction Scale
-                        </h5>
-                        <a href="{% url 'entries:correction_scales_list' %}" class="btn btn-sm btn-outline-primary">
-                            <i class="bi bi-gear"></i> Manage
-                        </a>
-                    </div>
-                    <div class="card-body">
-                        {% if correction_scales %}
-                            <div class="table-responsive">
-                                <table class="table table-hover mb-0">
-                                    <thead>
-                                        <tr>
-                                            <th>Blood Glucose</th>
-                                            <th class="text-end">Add Units</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {% for scale in correction_scales %}
-                                            <tr>
-                                                <td>Above <strong>{{ scale.greater_than }}</strong> mmol/L</td>
-                                                <td class="text-end"><span class="badge bg-info">+{{ scale.units_to_add }} u</span></td>
-                                            </tr>
-                                        {% endfor %}
-                                    </tbody>
-                                </table>
-                            </div>
-                        {% else %}
-                            <div class="text-center text-muted py-5">
-                                <i class="bi bi-calculator-x" style="font-size: 2rem;"></i>
-                                <p class="mb-2">No correction scale defined</p>
-                                <a href="{% url 'entries:correction_scale_create' %}" class="btn btn-sm btn-primary">
-                                    <i class="bi bi-plus-circle"></i> Add Scale
-                                </a>
-                            </div>
-                        {% endif %}
-                    </div>
-                </div>
+      <div class="row g-4">
+        <!-- Insulin Schedule Table -->
+        <div class="col-lg-8">
+          <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+              <h5 class="mb-0"><i class="bi bi-clock-fill text-primary"></i> Schedule</h5>
+              <a href="{% url 'entries:insulin_schedules_list' %}" class="btn btn-sm btn-outline-primary"><i class="bi bi-gear"></i> Manage</a>
             </div>
+            <div class="card-body">
+              {% if insulin_schedules %}
+                <div class="table-responsive">
+                  <table class="table table-hover mb-0">
+                    <thead>
+                      <tr>
+                        <th>Time</th>
+                        <th>Label</th>
+                        <th>Type</th>
+                        <th class="text-end">Units</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {% for schedule in insulin_schedules %}
+                        <tr>
+                          <td>
+                            <strong>{{ schedule.time|time:'H:i' }}</strong>
+                          </td>
+                          <td>{{ schedule.label }}</td>
+                          <td>
+                            <span class="badge bg-success">{{ schedule.insulin_type.name }}</span>
+                          </td>
+                          <td class="text-end">{{ schedule.units }} u</td>
+                        </tr>
+                      {% endfor %}
+                    </tbody>
+                  </table>
+                </div>
+              {% else %}
+                <div class="text-center text-muted py-5">
+                  <i class="bi bi-calendar-x" style="font-size: 2rem;"></i>
+                  <p class="mb-2">No scheduled doses yet</p>
+                  <a href="{% url 'entries:insulin_schedule_create' %}" class="btn btn-sm btn-primary"><i class="bi bi-plus-circle"></i> Add Schedule</a>
+                </div>
+              {% endif %}
+            </div>
+          </div>
         </div>
+
+        <!-- Correction Scale Table -->
+        <div class="col-lg-4">
+          <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+              <h5 class="mb-0"><i class="bi bi-calculator-fill text-info"></i> Correction Scale</h5>
+              <a href="{% url 'entries:correction_scales_list' %}" class="btn btn-sm btn-outline-primary"><i class="bi bi-gear"></i> Manage</a>
+            </div>
+            <div class="card-body">
+              {% if correction_scales %}
+                <div class="table-responsive">
+                  <table class="table table-hover mb-0">
+                    <thead>
+                      <tr>
+                        <th>Blood Glucose</th>
+                        <th class="text-end">Add Units</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {% for scale in correction_scales %}
+                        <tr>
+                          <td>
+                            Above <strong>{{ scale.greater_than }}</strong> mmol/L
+                          </td>
+                          <td class="text-end">
+                            <span class="badge bg-info">+{{ scale.units_to_add }} u</span>
+                          </td>
+                        </tr>
+                      {% endfor %}
+                    </tbody>
+                  </table>
+                </div>
+              {% else %}
+                <div class="text-center text-muted py-5">
+                  <i class="bi bi-calculator-x" style="font-size: 2rem;"></i>
+                  <p class="mb-2">No correction scale defined</p>
+                  <a href="{% url 'entries:correction_scale_create' %}" class="btn btn-sm btn-primary"><i class="bi bi-plus-circle"></i> Add Scale</a>
+                </div>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+      </div>
     </section>
 
     <!-- Blood Glucose History Section -->
     <section class="mb-6 py-5">
-        <div class="d-flex justify-content-between align-items-center mb-3">
-            <h2 class="mb-0">Blood Glucose History</h2>
-            <a href="{% url 'entries:glucose_readings_list' %}" class="btn btn-outline-primary btn-sm">
-                <i class="bi bi-list-ul"></i> View All Readings
-            </a>
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2 class="mb-0">Blood Glucose History</h2>
+        <a href="{% url 'entries:glucose_readings_list' %}" class="btn btn-outline-primary btn-sm"><i class="bi bi-list-ul"></i> View All Readings</a>
+      </div>
+
+      {% if has_glucose_data %}
+        <!-- Statistics Cards -->
+        <div class="row g-3 mb-4">
+          <div class="col-md-4">
+            <div class="card h-100">
+              <div class="card-body text-center">
+                <div class="text-muted mb-2">
+                  <i class="bi bi-arrow-up-circle"></i> Highest (Past Week)
+                </div>
+                {% if glucose_stats.highest %}
+                  <h3 class="mb-0 {% if glucose_stats.highest > 15 %}
+                      
+                      text-danger
+
+                    {% elif glucose_stats.highest >= 10 %}
+                      
+                      text-info
+
+                    {% else %}
+                      
+                      text-success
+
+                    {% endif %}">
+                    {{ glucose_stats.highest|floatformat:1 }}
+                  </h3>
+                  <small class="text-muted">mmol/L</small>
+                {% else %}
+                  <p class="text-muted mb-0">No data</p>
+                {% endif %}
+              </div>
+            </div>
+          </div>
+          <div class="col-md-4">
+            <div class="card h-100">
+              <div class="card-body text-center">
+                <div class="text-muted mb-2">
+                  <i class="bi bi-arrow-down-circle"></i> Lowest (Past Week)
+                </div>
+                {% if glucose_stats.lowest %}
+                  <h3 class="mb-0 {% if glucose_stats.lowest > 15 %}
+                      
+                      text-danger
+
+                    {% elif glucose_stats.lowest >= 10 %}
+                      
+                      text-info
+
+                    {% else %}
+                      
+                      text-success
+
+                    {% endif %}">
+                    {{ glucose_stats.lowest|floatformat:1 }}
+                  </h3>
+                  <small class="text-muted">mmol/L</small>
+                {% else %}
+                  <p class="text-muted mb-0">No data</p>
+                {% endif %}
+              </div>
+            </div>
+          </div>
+          <div class="col-md-4">
+            <div class="card h-100">
+              <div class="card-body text-center">
+                <div class="text-muted mb-2">
+                  <i class="bi bi-bar-chart"></i> Median (Past Week)
+                </div>
+                {% if glucose_stats.median %}
+                  <h3 class="mb-0 {% if glucose_stats.median > 15 %}
+                      
+                      text-danger
+
+                    {% elif glucose_stats.median >= 10 %}
+                      
+                      text-info
+
+                    {% else %}
+                      
+                      text-success
+
+                    {% endif %}">
+                    {{ glucose_stats.median|floatformat:1 }}
+                  </h3>
+                  <small class="text-muted">mmol/L</small>
+                {% else %}
+                  <p class="text-muted mb-0">No data</p>
+                {% endif %}
+              </div>
+            </div>
+          </div>
         </div>
 
-        {% if has_glucose_data %}
-            <!-- Statistics Cards -->
-            <div class="row g-3 mb-4">
-                <div class="col-md-4">
-                    <div class="card h-100">
-                        <div class="card-body text-center">
-                            <div class="text-muted mb-2">
-                                <i class="bi bi-arrow-up-circle"></i> Highest (Past Week)
-                            </div>
-                            {% if glucose_stats.highest %}
-                                <h3 class="mb-0 {% if glucose_stats.highest > 15 %}text-danger{% elif glucose_stats.highest >= 10 %}text-info{% else %}text-success{% endif %}">{{ glucose_stats.highest|floatformat:1 }}</h3>
-                                <small class="text-muted">mmol/L</small>
-                            {% else %}
-                                <p class="text-muted mb-0">No data</p>
-                            {% endif %}
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-4">
-                    <div class="card h-100">
-                        <div class="card-body text-center">
-                            <div class="text-muted mb-2">
-                                <i class="bi bi-arrow-down-circle"></i> Lowest (Past Week)
-                            </div>
-                            {% if glucose_stats.lowest %}
-                                <h3 class="mb-0 {% if glucose_stats.lowest > 15 %}text-danger{% elif glucose_stats.lowest >= 10 %}text-info{% else %}text-success{% endif %}">{{ glucose_stats.lowest|floatformat:1 }}</h3>
-                                <small class="text-muted">mmol/L</small>
-                            {% else %}
-                                <p class="text-muted mb-0">No data</p>
-                            {% endif %}
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-4">
-                    <div class="card h-100">
-                        <div class="card-body text-center">
-                            <div class="text-muted mb-2">
-                                <i class="bi bi-bar-chart"></i> Median (Past Week)
-                            </div>
-                            {% if glucose_stats.median %}
-                                <h3 class="mb-0 {% if glucose_stats.median > 15 %}text-danger{% elif glucose_stats.median >= 10 %}text-info{% else %}text-success{% endif %}">{{ glucose_stats.median|floatformat:1 }}</h3>
-                                <small class="text-muted">mmol/L</small>
-                            {% else %}
-                                <p class="text-muted mb-0">No data</p>
-                            {% endif %}
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Daily Averages Chart -->
-                    <h5 class="card-title mb-3 mt-3">Daily Averages (Past 2 Weeks)</h5>
-                    <canvas id="dashboardGlucoseChart" style="max-height: 300px;"></canvas>
-        {% else %}
-            <div class="alert alert-info">
-                <i class="bi bi-info-circle me-2"></i>No glucose readings yet. Start tracking your blood glucose to see statistics and trends here!
-            </div>
-        {% endif %}
+        <!-- Daily Averages Chart -->
+        <h5 class="card-title mb-3 mt-3">Daily Averages (Past 2 Weeks)</h5>
+        <canvas id="dashboardGlucoseChart" style="max-height: 300px;"></canvas>
+      {% else %}
+        <div class="alert alert-info">
+          <i class="bi bi-info-circle me-2"></i>No glucose readings yet. Start tracking your blood glucose to see statistics and trends here!
+        </div>
+      {% endif %}
     </section>
 
     <!-- Recent Activity Section -->
     <section class="mb-6 py-5">
-        <div class="d-flex justify-content-between align-items-center mb-3">
-            <h2 class="mb-0">Recent Activity</h2>
-            <a href="{% url 'entries:activity' %}" class="btn btn-outline-primary btn-sm">
-                <i class="bi bi-clock-history"></i> View All
-            </a>
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2 class="mb-0">Recent Activity</h2>
+        <a href="{% url 'entries:activity' %}" class="btn btn-outline-primary btn-sm"><i class="bi bi-clock-history"></i> View All</a>
+      </div>
+
+      {% if recent_entries %}
+        <div class="card">
+          <div class="card-body">
+            <div class="table-responsive">
+              <table class="table table-hover mb-0">
+                <thead>
+                  <tr>
+                    <th>Date & Time</th>
+                    <th>Type</th>
+                    <th>Details</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for entry in recent_entries %}
+                    <tr>
+                      <td>{{ entry.occurred_at|date:'Y-m-d H:i' }}</td>
+                      <td>
+                        {% if entry.entry_type == 'glucose' %}
+                          <span class="badge bg-info"><i class="bi bi-droplet-fill"></i> Glucose</span>
+                        {% elif entry.entry_type == 'insulin' %}
+                          <span class="badge bg-success"><i class="bi bi-heart-pulse-fill"></i> Insulin</span>
+                        {% elif entry.entry_type == 'meal' %}
+                          <span class="badge bg-warning text-dark"><i class="bi bi-egg-fried"></i> Meal</span>
+                        {% endif %}
+                      </td>
+                      <td>
+                        {% if entry.entry_type == 'glucose' %}
+                          <strong>{{ entry.value }} {{ entry.unit }}</strong>
+                        {% elif entry.entry_type == 'insulin' %}
+                          <strong>{{ entry.base_units|add:entry.correction_units }} units</strong>
+                          ({{ entry.base_units }} base + {{ entry.correction_units }} correction) - {{ entry.insulin_type.name }}
+                        {% elif entry.entry_type == 'meal' %}
+                          <strong>{{ entry.get_meal_type_display }}</strong>
+                          {% if entry.total_carbs %}
+                            - {{ entry.total_carbs }}g carbs
+                          {% endif %}
+                        {% endif %}
+                      </td>
+                      <td>
+                        {% if entry.entry_type == 'glucose' %}
+                          <a href="{% url 'entries:glucose_reading_edit' entry.pk %}" class="btn btn-sm btn-outline-primary"><i class="bi bi-pencil"></i> Edit</a>
+                        {% elif entry.entry_type == 'insulin' %}
+                          <a href="{% url 'entries:insulin_dose_edit' entry.pk %}" class="btn btn-sm btn-outline-primary"><i class="bi bi-pencil"></i> Edit</a>
+                        {% elif entry.entry_type == 'meal' %}
+                          <a href="{% url 'entries:meal_edit' entry.pk %}" class="btn btn-sm btn-outline-primary"><i class="bi bi-pencil"></i> Edit</a>
+                        {% endif %}
+                      </td>
+                    </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+          </div>
         </div>
-        
-        {% if recent_entries %}
-            <div class="card">
-                <div class="card-body">
-                    <div class="table-responsive">
-                        <table class="table table-hover mb-0">
-                            <thead>
-                                <tr>
-                                    <th>Date & Time</th>
-                                    <th>Type</th>
-                                    <th>Details</th>
-                                    <th>Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for entry in recent_entries %}
-                                    <tr>
-                                        <td>{{ entry.occurred_at|date:"Y-m-d H:i" }}</td>
-                                        <td>
-                                            {% if entry.entry_type == "glucose" %}
-                                                <span class="badge bg-info">
-                                                    <i class="bi bi-droplet-fill"></i> Glucose
-                                                </span>
-                                            {% elif entry.entry_type == "insulin" %}
-                                                <span class="badge bg-success">
-                                                    <i class="bi bi-heart-pulse-fill"></i> Insulin
-                                                </span>
-                                            {% elif entry.entry_type == "meal" %}
-                                                <span class="badge bg-warning text-dark">
-                                                    <i class="bi bi-egg-fried"></i> Meal
-                                                </span>
-                                            {% endif %}
-                                        </td>
-                                        <td>
-                                            {% if entry.entry_type == "glucose" %}
-                                                <strong>{{ entry.value }} {{ entry.unit }}</strong>
-                                            {% elif entry.entry_type == "insulin" %}
-                                                <strong>{{ entry.base_units|add:entry.correction_units }} units</strong> 
-                                                ({{ entry.base_units }} base + {{ entry.correction_units }} correction) - {{ entry.insulin_type.name }}
-                                            {% elif entry.entry_type == "meal" %}
-                                                <strong>{{ entry.get_meal_type_display }}</strong>
-                                                {% if entry.total_carbs %} - {{ entry.total_carbs }}g carbs{% endif %}
-                                            {% endif %}
-                                        </td>
-                                        <td>
-                                            {% if entry.entry_type == "glucose" %}
-                                                <a href="{% url 'entries:glucose_reading_edit' entry.pk %}" class="btn btn-sm btn-outline-primary">
-                                                    <i class="bi bi-pencil"></i> Edit
-                                                </a>
-                                            {% elif entry.entry_type == "insulin" %}
-                                                <a href="{% url 'entries:insulin_dose_edit' entry.pk %}" class="btn btn-sm btn-outline-primary">
-                                                    <i class="bi bi-pencil"></i> Edit
-                                                </a>
-                                            {% elif entry.entry_type == "meal" %}
-                                                <a href="{% url 'entries:meal_edit' entry.pk %}" class="btn btn-sm btn-outline-primary">
-                                                    <i class="bi bi-pencil"></i> Edit
-                                                </a>
-                                            {% endif %}
-                                        </td>
-                                    </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-        {% else %}
-            <div class="alert alert-info">
-                <i class="bi bi-info-circle"></i> No recent activity. Start by adding your first entry above!
-            </div>
-        {% endif %}
+      {% else %}
+        <div class="alert alert-info">
+          <i class="bi bi-info-circle"></i> No recent activity. Start by adding your first entry above!
+        </div>
+      {% endif %}
     </section>
 
     <!-- Manage Logs Section -->
     <section class="mb-6 py-5">
-        <h2 class="mb-3">Manage Logs</h2>
-        <div class="row g-3">
-            <!-- Blood Glucose Readings -->
-            <div class="col-md-4">
-                <a href="{% url 'entries:glucose_readings_list' %}" class="text-decoration-none">
-                    <div class="card h-100 hover-shadow">
-                        <div class="card-body d-flex align-items-center">
-                            <div class="me-3">
-                                <i class="bi bi-droplet-fill text-info" style="font-size: 2.5rem;"></i>
-                            </div>
-                            <div>
-                                <h5 class="card-title mb-0">Blood Glucose</h5>
-                                <p class="text-muted small mb-0">View all readings</p>
-                            </div>
-                        </div>
-                    </div>
-                </a>
+      <h2 class="mb-3">Manage Logs</h2>
+      <div class="row g-3">
+        <!-- Blood Glucose Readings -->
+        <div class="col-md-4">
+          <a href="{% url 'entries:glucose_readings_list' %}" class="text-decoration-none">
+            <div class="card h-100 hover-shadow">
+              <div class="card-body d-flex align-items-center">
+                <div class="me-3">
+                  <i class="bi bi-droplet-fill text-info" style="font-size: 2.5rem;"></i>
+                </div>
+                <div>
+                  <h5 class="card-title mb-0">Blood Glucose</h5>
+                  <p class="text-muted small mb-0">View all readings</p>
+                </div>
+              </div>
             </div>
-
-            <!-- Insulin Doses -->
-            <div class="col-md-4">
-                <a href="{% url 'entries:insulin_doses_list' %}" class="text-decoration-none">
-                    <div class="card h-100 hover-shadow">
-                        <div class="card-body d-flex align-items-center">
-                            <div class="me-3">
-                                <i class="bi bi-heart-pulse-fill text-success" style="font-size: 2.5rem;"></i>
-                            </div>
-                            <div>
-                                <h5 class="card-title mb-0">Insulin Doses</h5>
-                                <p class="text-muted small mb-0">View all doses</p>
-                            </div>
-                        </div>
-                    </div>
-                </a>
-            </div>
-
-            <!-- Meals -->
-            <div class="col-md-4">
-                <a href="{% url 'entries:meals_list' %}" class="text-decoration-none">
-                    <div class="card h-100 hover-shadow">
-                        <div class="card-body d-flex align-items-center">
-                            <div class="me-3">
-                                <i class="bi bi-egg-fried text-warning" style="font-size: 2.5rem;"></i>
-                            </div>
-                            <div>
-                                <h5 class="card-title mb-0">Meals</h5>
-                                <p class="text-muted small mb-0">View all meals</p>
-                            </div>
-                        </div>
-                    </div>
-                </a>
-            </div>
+          </a>
         </div>
-    </section>
-</div>
 
-<script>
+        <!-- Insulin Doses -->
+        <div class="col-md-4">
+          <a href="{% url 'entries:insulin_doses_list' %}" class="text-decoration-none">
+            <div class="card h-100 hover-shadow">
+              <div class="card-body d-flex align-items-center">
+                <div class="me-3">
+                  <i class="bi bi-heart-pulse-fill text-success" style="font-size: 2.5rem;"></i>
+                </div>
+                <div>
+                  <h5 class="card-title mb-0">Insulin Doses</h5>
+                  <p class="text-muted small mb-0">View all doses</p>
+                </div>
+              </div>
+            </div>
+          </a>
+        </div>
+
+        <!-- Meals -->
+        <div class="col-md-4">
+          <a href="{% url 'entries:meals_list' %}" class="text-decoration-none">
+            <div class="card h-100 hover-shadow">
+              <div class="card-body d-flex align-items-center">
+                <div class="me-3">
+                  <i class="bi bi-egg-fried text-warning" style="font-size: 2.5rem;"></i>
+                </div>
+                <div>
+                  <h5 class="card-title mb-0">Meals</h5>
+                  <p class="text-muted small mb-0">View all meals</p>
+                </div>
+              </div>
+            </div>
+          </a>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <script>
     {% if has_glucose_data %}
     document.addEventListener('DOMContentLoaded', function() {
         const ctx = document.getElementById('dashboardGlucoseChart').getContext('2d');
@@ -404,7 +430,8 @@
                     tooltip: {
                         callbacks: {
                             title: function(context) {
-                                const date = new Date(context[0].label);
+                                const dateLabel = context[0].label.split(',').slice(0, 2).join(', ');
+                                const date = new Date(dateLabel);
                                 return date.toLocaleDateString('en-US', { 
                                     weekday: 'short', 
                                     month: 'short', 
