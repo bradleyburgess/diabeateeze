@@ -177,7 +177,7 @@
                                 <i class="bi bi-arrow-up-circle"></i> Highest (Past Week)
                             </div>
                             {% if glucose_stats.highest %}
-                                <h3 class="mb-0 {% if glucose_stats.highest > 15 %}text-danger{% elif glucose_stats.highest >= 10 %}text-muted{% else %}text-success{% endif %}">{{ glucose_stats.highest|floatformat:0 }}</h3>
+                                <h3 class="mb-0 {% if glucose_stats.highest > 15 %}text-danger{% elif glucose_stats.highest >= 10 %}text-info{% else %}text-success{% endif %}">{{ glucose_stats.highest|floatformat:1 }}</h3>
                                 <small class="text-muted">mmol/L</small>
                             {% else %}
                                 <p class="text-muted mb-0">No data</p>
@@ -192,7 +192,7 @@
                                 <i class="bi bi-arrow-down-circle"></i> Lowest (Past Week)
                             </div>
                             {% if glucose_stats.lowest %}
-                                <h3 class="mb-0 {% if glucose_stats.lowest > 15 %}text-danger{% elif glucose_stats.lowest >= 10 %}text-muted{% else %}text-success{% endif %}">{{ glucose_stats.lowest|floatformat:0 }}</h3>
+                                <h3 class="mb-0 {% if glucose_stats.lowest > 15 %}text-danger{% elif glucose_stats.lowest >= 10 %}text-info{% else %}text-success{% endif %}">{{ glucose_stats.lowest|floatformat:1 }}</h3>
                                 <small class="text-muted">mmol/L</small>
                             {% else %}
                                 <p class="text-muted mb-0">No data</p>
@@ -207,7 +207,7 @@
                                 <i class="bi bi-bar-chart"></i> Median (Past Week)
                             </div>
                             {% if glucose_stats.median %}
-                                <h3 class="mb-0 {% if glucose_stats.median > 15 %}text-danger{% elif glucose_stats.median >= 10 %}text-muted{% else %}text-success{% endif %}">{{ glucose_stats.median|floatformat:0 }}</h3>
+                                <h3 class="mb-0 {% if glucose_stats.median > 15 %}text-danger{% elif glucose_stats.median >= 10 %}text-info{% else %}text-success{% endif %}">{{ glucose_stats.median|floatformat:1 }}</h3>
                                 <small class="text-muted">mmol/L</small>
                             {% else %}
                                 <p class="text-muted mb-0">No data</p>
