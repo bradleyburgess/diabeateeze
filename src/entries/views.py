@@ -132,7 +132,7 @@ def glucose_readings_list(request):
     end_datetime = date_filters["end_datetime"]
 
     # Get page size from query parameter, default to 50
-    page_size = request.GET.get("page_size", "50")
+    page_size = request.GET.get("page_size", "10")
     try:
         page_size = int(page_size)
         # Limit page size to reasonable values
