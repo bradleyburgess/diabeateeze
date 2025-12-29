@@ -189,38 +189,40 @@ def glucose_readings_list(request):
     chart_data = []
     daily_data = {}  # For 24-hour overlay chart
     daily_averages = {}  # For daily averages chart
-    
+
     for reading in chart_readings:
         # For timeline chart
-        chart_data.append({
-            "timestamp": reading.occurred_at.isoformat(),
-            "value": float(reading.value),
-        })
-        
+        chart_data.append(
+            {
+                "timestamp": reading.occurred_at.isoformat(),
+                "value": float(reading.value),
+            }
+        )
+
         # For 24-hour overlay chart
         date_key = reading.occurred_at.date().isoformat()
         time_key = reading.occurred_at.strftime("%H:%M")
-        
+
         if date_key not in daily_data:
             daily_data[date_key] = []
-        
-        daily_data[date_key].append({
-            "time": time_key,
-            "hour_decimal": reading.occurred_at.hour + reading.occurred_at.minute / 60,
-            "value": float(reading.value),
-        })
-        
+
+        daily_data[date_key].append(
+            {
+                "time": time_key,
+                "hour_decimal": reading.occurred_at.hour
+                + reading.occurred_at.minute / 60,
+                "value": float(reading.value),
+            }
+        )
+
         # For daily averages chart
         if date_key not in daily_averages:
             daily_averages[date_key] = []
         daily_averages[date_key].append(float(reading.value))
-    
+
     # Calculate averages for each day
     daily_avg_data = [
-        {
-            "date": date,
-            "average": sum(values) / len(values)
-        }
+        {"date": date, "average": sum(values) / len(values)}
         for date, values in sorted(daily_averages.items())
     ]
 

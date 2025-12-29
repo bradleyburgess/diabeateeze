@@ -40,8 +40,8 @@ class TestGlucoseReadingsListView:
         
         response = client.get(reverse("entries:glucose_readings_list"))
         assert response.status_code == 200
-        assert len(response.context["page_obj"]) == 50
-        assert response.context["page_size"] == 50
+        assert len(response.context["page_obj"]) == 10
+        assert response.context["page_size"] == 10
 
     def test_pagination_custom_page_size(self, client, user):
         """Test custom page sizes."""
