@@ -45,7 +45,6 @@ services:
       - ALLOWED_HOSTS=${ALLOWED_HOSTS:-localhost}
       - DATABASE_URL=postgresql://${PG_USER:-postgres}:${PG_PASSWORD}@db:5432/${PG_DATABASE:-diabeateeze}
     volumes:
-      - static_files:/app/staticfiles
       - media_files:/app/mediafiles
     depends_on:
       db:
@@ -63,7 +62,6 @@ services:
 
 volumes:
   postgres_data:
-  static_files:
   media_files:
 
 networks:

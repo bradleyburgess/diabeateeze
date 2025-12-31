@@ -35,7 +35,7 @@ RUN mkdir -p /app/staticfiles /app/mediafiles && \
 USER appuser
 
 # Collect static files
-RUN python src/manage.py collectstatic --noinput || true
+RUN python manage.py collectstatic --noinput
 
 # Expose port
 EXPOSE 8000
