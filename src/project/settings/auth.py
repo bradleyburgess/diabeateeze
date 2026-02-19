@@ -2,6 +2,8 @@
 Authentication and authorization settings.
 """
 
+from .environment import ALLOW_REGISTRATIONS
+
 # Custom user model
 AUTH_USER_MODEL = "users.User"
 
@@ -17,6 +19,7 @@ ACCOUNT_LOGOUT_REDIRECT_URL = "/accounts/login/"
 
 # Django Allauth settings (v65+)
 ACCOUNT_LOGIN_METHODS = {"email"}
+ACCOUNT_SIGNUP_ENABLED = ALLOW_REGISTRATIONS
 ACCOUNT_SIGNUP_FIELDS = ["email*", "password1*", "password2*"]
 ACCOUNT_EMAIL_VERIFICATION = "optional"
 ACCOUNT_UNIQUE_EMAIL = True

@@ -19,7 +19,10 @@ env = environ.Env(
 environ.Env.read_env(BASE_DIR / ".env")
 
 # Application version
-VERSION = "1.1.3"
+VERSION = "1.2.0"
 
 # Environment type (development, testing, production)
 ENVIRONMENT = env("DJANGO_ENVIRONMENT")
+
+# Allow user registrations (set ALLOW_REGISTRATIONS=false to disable sign-ups)
+ALLOW_REGISTRATIONS = env.bool("ALLOW_REGISTRATIONS", default=True)
