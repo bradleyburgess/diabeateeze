@@ -29,6 +29,7 @@ class GlucoseReadingForm(forms.ModelForm):
                     "step": "0.1",
                     "min": "0",
                     "placeholder": "e.g., 5.5",
+                    "autofocus": True,
                 }
             ),
             "unit": forms.Select(
